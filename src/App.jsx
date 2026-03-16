@@ -9,7 +9,7 @@ import {
   Frown, CloudRain, Angry, Coffee, Users,
   Heart, Activity, PiggyBank, Brain, Leaf,
   Camera, Phone, CheckCircle2, Star,
-  Home, AlertCircle, Swords, Wind, Droplet, Check
+  Home, AlertCircle, Swords, Wind, Droplet, Check, ChevronDown ,ChevronRight
 } from 'lucide-react';
 
 // --- EXTERNAL COMPONENTS ---
@@ -181,8 +181,6 @@ const Dashboard = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 bg-[#FAFAFA] relative flex flex-col h-full overflow-hidden">
       
-      {/* --- TAB ROUTING --- */}
-      
       {/* HOME TAB */}
       {activeTab === 'home' && (
         <div className="flex-1 overflow-y-auto pb-32 hide-scrollbar">
@@ -326,6 +324,13 @@ const Dashboard = () => {
 // --- APP COMPONENT (Onboarding Router) ---
 export default function App() {
   const [step, setStep] = useState(1);
+  const [addedContacts, setAddedContacts] = useState([]);
+
+  const toggleContact = (role) => {
+    setAddedContacts(prev => 
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  };
   const [answers, setAnswers] = useState({});
   const [anchorImages, setAnchorImages] = useState([null, null, null, null]);
 
@@ -508,15 +513,25 @@ export default function App() {
               <SpeechBubble text="Who should we contact if you're struggling?" />
               <BrainMascot expression="thinking" className="w-24 h-24 mx-auto mb-6" />
               <div className="space-y-4 mb-auto">
-                {['Family Member', 'Trusted Friend', 'Therapist', 'Sponsor / Mentor'].map((role) => (
-                  <div key={role} className="p-4 bg-white border-2 border-gray-100 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-500"><Phone size={18} /></div>
-                      <span className="font-semibold text-gray-700">{role}</span>
+                {['Family Member', 'Trusted Friend', 'Therapist', 'Sponsor / Mentor'].map((role) => {
+                  const isAdded = addedContacts.includes(role);
+                  return (
+                    <div key={role} className={`p-4 bg-white border-2 rounded-2xl flex items-center justify-between shadow-sm transition-colors ${isAdded ? 'border-[#D9ECA2]' : 'border-gray-100'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isAdded ? 'bg-[#7D9C6D] text-white' : 'bg-orange-100 text-orange-500'}`}>
+                          <Phone size={18} />
+                        </div>
+                        <span className="font-semibold text-gray-700">{role}</span>
+                      </div>
+                      <button 
+                        onClick={() => toggleContact(role)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1 ${isAdded ? 'bg-[#7D9C6D] text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                      >
+                        {isAdded ? <><Check size={14} strokeWidth={3}/> Added</> : 'Add'}
+                      </button>
                     </div>
-                    <button className="px-4 py-2 bg-gray-50 rounded-xl text-gray-600 text-sm font-bold hover:bg-gray-100">Add</button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-8 pb-4"><Button onClick={() => setStep(10)}>Build My Plan</Button></div>
             </div>
@@ -540,6 +555,7 @@ export default function App() {
           </FadeIn>
         )}
 
+        {/* --- STEP 11: GUIDED TOUR START --- */}
         {step === 11 && (
           <FadeIn>
             <div className="flex-1 bg-[#f8fcf4] flex flex-col overflow-hidden">
@@ -558,10 +574,32 @@ export default function App() {
                     { w: 7, title: 'Strong Recovery', side: 'right', icon: Star },
                   ].map((node, i) => (
                     <div key={i} className={`flex ${node.side === 'right' ? 'justify-end' : 'justify-start'} w-full relative`}>
-                      <div onClick={() => node.w === 1 && setStep(12)} className={`w-[60%] flex flex-col items-center cursor-pointer group ${node.w === 1 ? 'animate-bounce' : ''}`}>
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-10 ${node.w === 1 ? 'bg-orange-400' : 'bg-[#D9ECA2] group-hover:bg-[#c2d984]'} transition-colors`}>
-                           {node.icon ? <node.icon size={32} className="text-white" fill="currentColor"/> : <Brain className={`w-8 h-8 ${node.w === 1 ? 'text-white' : 'text-[#7D9C6D]'}`} />}
+                   <div onClick={() => node.w === 1 && setStep(12)} className={`w-[60%] flex flex-col items-center cursor-pointer group ${node.w === 1 ? 'animate-bounce' : ''}`}>
+                        
+                        {/* 1. We added "relative" to the circle, and moved the tooltip INSIDE it */}
+                        <div className={`relative w-20 h-20 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-10 ${node.w === 1 ? 'bg-orange-400' : 'bg-[#D9ECA2] group-hover:bg-[#c2d984]'} transition-colors`}>
+                          
+                          {/* 2. THE GUIDING TOOLTIP (Now perfectly anchored to the Left side) */}
+                          {node.w === 1 && (
+                            <motion.div 
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: [-10, 0, -10] }}
+                              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                              className="absolute right-[calc(100%+12px)] top-1/2 -translate-y-1/2 flex items-center z-50 pointer-events-none"
+                            >
+                              <div className="bg-orange-500 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-xl whitespace-nowrap flex items-center gap-1 relative">
+                                Start here! <ChevronRight size={16} strokeWidth={3} />
+                                {/* Pointer triangle pointing right towards the circle */}
+                                <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-3 h-3 bg-orange-500 rotate-45 rounded-sm"></div>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {/* The Icon inside the circle */}
+                          {node.icon ? <node.icon size={32} className="text-white" fill="currentColor"/> : <Brain className={`w-8 h-8 ${node.w === 1 ? 'text-white' : 'text-[#7D9C6D]'}`} />}
                         </div>
+                        
+                        {/* The Text Label below the circle */}
                         <div className="mt-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 text-center relative">
                           <span className="block text-xs font-bold text-gray-400">WEEK {node.w}</span>
                           <span className="block text-sm font-bold text-gray-700">{node.title}</span>
@@ -576,6 +614,7 @@ export default function App() {
           </FadeIn>
         )}
 
+        {/* --- STEP 12: GUIDED TOUR CONTINUE --- */}
         {step === 12 && (
           <FadeIn>
             <div className="flex-1 bg-white flex flex-col">
@@ -602,7 +641,22 @@ export default function App() {
                   ))}
                 </div>
               </div>
-              <div className="p-6 bg-white border-t border-gray-50"><Button onClick={() => setStep(13)}>Continue</Button></div>
+              
+              {/* THE GUIDING TOOLTIP */}
+              <div className="p-6 bg-white border-t border-gray-50 relative">
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: [-10, 5, -10] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-50 pointer-events-none"
+                >
+                  <div className="bg-[#7D9C6D] text-white text-xs font-black px-4 py-2 rounded-2xl shadow-xl whitespace-nowrap flex items-center gap-1">
+                    Almost there! <ChevronDown size={16} strokeWidth={3} />
+                  </div>
+                  <div className="w-3 h-3 bg-[#7D9C6D] rotate-45 -mt-1.5 rounded-sm"></div>
+                </motion.div>
+                <Button onClick={() => setStep(13)}>Continue</Button>
+              </div>
             </div>
           </FadeIn>
         )}
