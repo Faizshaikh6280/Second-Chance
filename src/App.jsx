@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer , 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-
-import RecoveryJourney from './RecoveryJourney';
-import CopingNow from './CopingNow';
-// Add this near your other imports
-import Challenges from './Challenges';
-// Add this near your other imports at the top of App.jsx
-import Community from './Community';
 import { 
   Beer, Cigarette, Pill, Smartphone, Candy, Plus, 
   Clock, Sun, Sunrise, Moon, Zap, Sunset,
-  Frown, CloudRain, Angry, Coffee, Users, // <--- It's already right here!
+  Frown, CloudRain, Angry, Coffee, Users,
   Heart, Activity, PiggyBank, Brain, Leaf,
   Camera, Phone, CheckCircle2, Star,
   Home, AlertCircle, Swords, Wind, Droplet, Check
-  // Just make sure there is no second 'Users' at the end of this list.
 } from 'lucide-react';
 
-// --- MASCOT COMPONENT (Upgraded with new states) ---
+// --- EXTERNAL COMPONENTS ---
+// Make sure these files exist in your src folder!
+import RecoveryJourney from './RecoveryJourney';
+import Challenges from './Challenges';
+import Community from './Community';
+import CopingNow from './CopingNow';
+
+// --- MASCOT COMPONENT ---
 const BrainMascot = ({ className = "", expression = "happy", action = "none" }) => {
   const isGlowing = expression === 'glowing';
   const isSleepy = expression === 'sleepy';
@@ -30,18 +29,14 @@ const BrainMascot = ({ className = "", expression = "happy", action = "none" }) 
       {isGlowing && <div className="absolute inset-0 bg-yellow-300 rounded-full blur-2xl opacity-40 animate-pulse"></div>}
       
       <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-        {/* Soft Pink Brain Base / Light Peach if glowing */}
         <path d="M60 90C87.6142 90 110 72.0914 110 50C110 27.9086 87.6142 10 60 10C32.3858 10 10 27.9086 10 50C10 72.0914 32.3858 90 60 90Z" fill={isGlowing ? "#F3D79C" : "#F9A8D4"}/>
         <path d="M30 30C40 20 50 15 60 15C70 15 80 20 90 30" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
         <path d="M25 50C40 45 50 45 60 50C70 55 80 55 95 50" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
         <path d="M35 70C45 75 50 75 60 70C70 65 80 65 85 70" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
         
-        {/* Face Elements */}
-        {/* Rosy Cheeks */}
         <circle cx="35" cy="55" r="8" fill="#B25349" opacity="0.4"/>
         <circle cx="85" cy="55" r="8" fill="#B25349" opacity="0.4"/>
         
-        {/* Dark Brown Eyes (#403931) */}
         {isSleepy ? (
           <>
             <path d="M40 45 Q 45 48 50 45" stroke="#403931" strokeWidth="3" strokeLinecap="round" fill="none"/>
@@ -54,14 +49,12 @@ const BrainMascot = ({ className = "", expression = "happy", action = "none" }) 
           </>
         )}
         
-        {/* Mouth based on expression */}
         {(expression === 'happy' || expression === 'glowing' || expression === 'energetic') && <path d="M55 55Q60 60 65 55" stroke="#403931" strokeWidth="3" strokeLinecap="round"/>}
         {expression === 'thinking' && <circle cx="60" cy="58" r="2" fill="#403931"/>}
         {expression === 'concerned' && <path d="M55 58Q60 55 65 58" stroke="#403931" strokeWidth="3" strokeLinecap="round"/>}
         {expression === 'sleepy' && <circle cx="60" cy="57" r="3" fill="#403931" opacity="0.5"/>}
       </svg>
 
-      {/* Action Props (Reading book, meditating etc.) */}
       {action === 'reading' && (
         <div className="absolute -bottom-2 w-10 h-6 bg-white border-2 border-gray-200 rounded shadow-sm z-20" style={{ transform: 'rotate(-10deg)'}}></div>
       )}
@@ -72,10 +65,8 @@ const BrainMascot = ({ className = "", expression = "happy", action = "none" }) 
   );
 };
 
-// --- REUSABLE ONBOARDING COMPONENTS ---
-const FadeIn = ({ children }) => (
-  <div className="animate-[fadeIn_0.5s_ease-out] w-full h-full flex flex-col">{children}</div>
-);
+// --- REUSABLE UI COMPONENTS ---
+const FadeIn = ({ children }) => <div className="animate-[fadeIn_0.5s_ease-out] w-full h-full flex flex-col">{children}</div>;
 
 const Button = ({ children, onClick, className = "", icon: Icon }) => (
   <button onClick={onClick} className={`w-full py-4 rounded-2xl font-bold text-lg text-white bg-[#7D9C6D] hover:bg-[#6b865d] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 ${className}`}>
@@ -108,9 +99,6 @@ const SpeechBubble = ({ text }) => (
   </div>
 );
 
-
-// --- NEW DASHBOARD COMPONENTS ---
-
 const ProgressRing = ({ percentage, label, icon: Icon, metric }) => {
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
@@ -119,22 +107,15 @@ const ProgressRing = ({ percentage, label, icon: Icon, metric }) => {
   return (
     <div className="flex flex-col items-center justify-center min-w-[140px] p-4 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 snap-center">
       <div className="relative flex items-center justify-center w-24 h-24 mb-3">
-        {/* Background Ring */}
         <svg className="absolute inset-0 w-full h-full transform -rotate-90">
           <circle cx="48" cy="48" r={radius} stroke="#f3f4f6" strokeWidth="8" fill="none" />
-          {/* Progress Ring */}
           <motion.circle
-            cx="48" cy="48" r={radius}
-            stroke="#7D9C6D" strokeWidth="8" fill="none" strokeLinecap="round"
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
+            cx="48" cy="48" r={radius} stroke="#7D9C6D" strokeWidth="8" fill="none" strokeLinecap="round"
+            initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset }} transition={{ duration: 1.5, ease: "easeOut" }}
             style={{ strokeDasharray: circumference }}
           />
         </svg>
-        <div className="relative z-10 text-[#7D9C6D] bg-[#D9ECA2]/30 p-3 rounded-full">
-          <Icon size={24} />
-        </div>
+        <div className="relative z-10 text-[#7D9C6D] bg-[#D9ECA2]/30 p-3 rounded-full"><Icon size={24} /></div>
       </div>
       <span className="text-sm font-bold text-gray-700 text-center">{label}</span>
       <span className="text-xs font-medium text-gray-400 mt-1 text-center">{metric}</span>
@@ -142,52 +123,39 @@ const ProgressRing = ({ percentage, label, icon: Icon, metric }) => {
   );
 };
 
-const TaskCard = ({ task, onComplete }) => {
-  return (
-    <motion.div 
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative p-4 rounded-2xl border-2 transition-colors duration-300 flex items-center gap-4 ${task.completed ? 'bg-[#D9ECA2]/40 border-[#D9ECA2]' : 'bg-white border-gray-100'}`}
-      onClick={() => onComplete(task.id)}
-    >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${task.completed ? 'bg-[#7D9C6D] text-white' : 'bg-gray-50 text-gray-400'}`}>
-        {task.completed ? <Check size={24} /> : <task.icon size={24} />}
-      </div>
-      <div className="flex-1">
-        <h4 className={`font-bold transition-colors ${task.completed ? 'text-[#7D9C6D]' : 'text-gray-800'}`}>{task.title}</h4>
-        <p className="text-sm text-gray-500 font-medium">{task.time}</p>
-      </div>
-      
-      {/* Micro-interaction confetti */}
-      <AnimatePresence>
-        {task.completed && (
-          <motion.div 
-            initial={{ scale: 0, opacity: 1 }}
-            animate={{ scale: [1, 1.5, 0], opacity: [1, 1, 0] }}
-            exit={{ opacity: 0 }}
-            className="absolute right-4 text-[#7D9C6D]"
-          >
-            <Leaf size={32} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-};
+const TaskCard = ({ task, onComplete }) => (
+  <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+    className={`relative p-4 rounded-2xl border-2 transition-colors duration-300 flex items-center gap-4 ${task.completed ? 'bg-[#D9ECA2]/40 border-[#D9ECA2]' : 'bg-white border-gray-100'}`}
+    onClick={() => onComplete(task.id)}
+  >
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${task.completed ? 'bg-[#7D9C6D] text-white' : 'bg-gray-50 text-gray-400'}`}>
+      {task.completed ? <Check size={24} /> : <task.icon size={24} />}
+    </div>
+    <div className="flex-1">
+      <h4 className={`font-bold transition-colors ${task.completed ? 'text-[#7D9C6D]' : 'text-gray-800'}`}>{task.title}</h4>
+      <p className="text-sm text-gray-500 font-medium">{task.time}</p>
+    </div>
+    <AnimatePresence>
+      {task.completed && (
+        <motion.div initial={{ scale: 0, opacity: 1 }} animate={{ scale: [1, 1.5, 0], opacity: [1, 1, 0] }} exit={{ opacity: 0 }} className="absolute right-4 text-[#7D9C6D]">
+          <Leaf size={32} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.div>
+);
 
+// --- MAIN DASHBOARD (Step 14) ---
 const Dashboard = () => {
-  // NEW: activeTab state controls which screen is visible
   const [activeTab, setActiveTab] = useState('home');
   const [isCopingMode, setIsCopingMode] = useState(false);
+  
   const streakDays = 12;
   const hour = new Date().getHours();
   
-  // Dynamic mascot state based on time
   let timePhase = 'Morning';
   let mascotAction = 'stretching';
   let greeting = "Ready for a fresh start today?";
-  
   if (hour >= 12 && hour < 17) { timePhase = 'Afternoon'; mascotAction = 'reading'; greeting = "Keep your focus strong!"; }
   else if (hour >= 17 && hour < 21) { timePhase = 'Evening'; mascotAction = 'meditating'; greeting = "Time to wind down and reflect."; }
   else if (hour >= 21 || hour < 5) { timePhase = 'Night'; mascotAction = 'sleeping'; greeting = "Rest well, you earned it."; }
@@ -199,20 +167,10 @@ const Dashboard = () => {
     { id: 4, title: 'Craving prevention', time: 'Night', icon: Moon, completed: false },
   ]);
 
-  const toggleTask = (id) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-  };
+  const toggleTask = (id) => setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
 
-  // Mock Data for Graphs
-  const cravingData = [
-    { day: 'Mon', intensity: 8 }, { day: 'Tue', intensity: 7 }, { day: 'Wed', intensity: 5 },
-    { day: 'Thu', intensity: 6 }, { day: 'Fri', intensity: 4 }, { day: 'Sat', intensity: 3 }, { day: 'Sun', intensity: 2 }
-  ];
-
-  const moodData = [
-    { day: 'Mon', mood: 1 }, { day: 'Tue', mood: 2 }, { day: 'Wed', mood: 3 },
-    { day: 'Thu', mood: 2 }, { day: 'Fri', mood: 4 }, { day: 'Sat', mood: 4 }
-  ];
+  const cravingData = [{ day: 'Mon', intensity: 8 }, { day: 'Tue', intensity: 7 }, { day: 'Wed', intensity: 5 }, { day: 'Thu', intensity: 6 }, { day: 'Fri', intensity: 4 }, { day: 'Sat', intensity: 3 }, { day: 'Sun', intensity: 2 }];
+  const moodData = [{ day: 'Mon', mood: 1 }, { day: 'Tue', mood: 2 }, { day: 'Wed', mood: 3 }, { day: 'Thu', mood: 2 }, { day: 'Fri', mood: 4 }, { day: 'Sat', mood: 4 }];
 
   const CustomMoodDot = (props) => {
     const { cx, cy, payload } = props;
@@ -223,13 +181,11 @@ const Dashboard = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 bg-[#FAFAFA] relative flex flex-col h-full overflow-hidden">
       
-      {/* --- CONDITIONAL RENDERING --- */}
+      {/* --- TAB ROUTING --- */}
       
-      {/* ROUTE 1: HOME TAB */}
+      {/* HOME TAB */}
       {activeTab === 'home' && (
         <div className="flex-1 overflow-y-auto pb-32 hide-scrollbar">
-          
-          {/* 1. Streak Header */}
           <div className="pt-12 px-6 pb-6 bg-white rounded-b-[40px] shadow-sm flex items-center justify-between sticky top-0 z-20">
             <div>
               <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">Your Progress</span>
@@ -243,23 +199,16 @@ const Dashboard = () => {
             <BrainMascot expression="energetic" className="w-12 h-12" />
           </div>
 
-          {/* 2. Mascot Center Card */}
           <div className="p-6">
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className="bg-gradient-to-b from-[#D9ECA2]/40 to-white rounded-[32px] p-6 shadow-sm border border-white relative overflow-hidden flex flex-col items-center text-center"
-            >
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-gradient-to-b from-[#D9ECA2]/40 to-white rounded-[32px] p-6 shadow-sm border border-white relative overflow-hidden flex flex-col items-center text-center">
               <SpeechBubble text={greeting} />
               <BrainMascot action={mascotAction} expression={timePhase === 'Night' ? 'sleepy' : 'happy'} className="w-32 h-32 my-4" />
               <p className="font-bold text-gray-700">Good {timePhase}!</p>
             </motion.div>
           </div>
 
-          {/* 3. Health Recovery Graphs (Horizontal Carousel) */}
           <div className="pl-6 mb-8">
-            <div className="flex items-center justify-between pr-6 mb-4">
-              <h2 className="text-lg font-extrabold text-gray-800">Body Healing</h2>
-            </div>
+            <h2 className="text-lg font-extrabold text-gray-800 mb-4">Body Healing</h2>
             <div className="flex gap-4 overflow-x-auto pb-4 pr-6 snap-x hide-scrollbar">
               <ProgressRing percentage={12} label="Lungs" icon={Wind} metric="12% improved" />
               <ProgressRing percentage={8} label="Heart" icon={HeartPulse} metric="Stress reduced" />
@@ -268,7 +217,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 4. Craving Trend Graph */}
           <div className="px-6 mb-8">
             <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50">
               <h2 className="text-lg font-extrabold text-gray-800 mb-6">Craving Intensity</h2>
@@ -286,7 +234,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 5. Mood Trend Graph */}
           <div className="px-6 mb-8">
             <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50">
               <h2 className="text-lg font-extrabold text-gray-800 mb-6">Emotional Progress</h2>
@@ -302,43 +249,40 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* 6. Today's Recovery Plan */}
           <div className="px-6 mb-8">
             <h2 className="text-lg font-extrabold text-gray-800 mb-4">Today's Recovery Plan</h2>
             <div className="space-y-3">
-              {tasks.map(task => (
-                <TaskCard key={task.id} task={task} onComplete={toggleTask} />
-              ))}
+              {tasks.map(task => <TaskCard key={task.id} task={task} onComplete={toggleTask} />)}
             </div>
           </div>
         </div>
       )}
 
-      {/* ROUTE 2: RECOVERY TAB */}
+      {/* RECOVERY TAB */}
       {activeTab === 'recovery' && (
-        <div className="flex-1 overflow-y-auto pb-32 hide-scrollbar">
+        <div className="flex-1 overflow-hidden">
           <RecoveryJourney />
         </div>
       )}
 
-      {/* --- NEW ROUTE 3: CHALLENGES TAB --- */}
+      {/* CHALLENGES TAB */}
       {activeTab === 'challenges' && (
         <div className="flex-1 overflow-hidden">
           <Challenges />
         </div>
       )}
-      {/* --- NEW ROUTE 4: COMMUNITY TAB --- */}
+
+      {/* COMMUNITY TAB */}
       {activeTab === 'community' && (
         <div className="flex-1 overflow-hidden">
           <Community />
         </div>
       )}
 
-      {/* Floating Emergency Button */}
-     <motion.button 
-        onClick={() => setIsCopingMode(true)} // NEW: Added onClick handler
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      {/* FLOATING COPING BUTTON */}
+      <motion.button 
+        onClick={() => setIsCopingMode(true)}
+        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
         className="absolute bottom-28 right-6 bg-gradient-to-r from-[#7D9C6D] to-[#6b865d] text-white p-4 rounded-full shadow-[0_8px_20px_rgb(125,156,109,0.4)] flex items-center gap-2 z-30"
       >
         <div className="relative">
@@ -348,30 +292,25 @@ const Dashboard = () => {
         <span className="font-bold pr-2">Coping Now</span>
       </motion.button>
 
-{/* Glassmorphism Bottom Navigation */}
+      {/* BOTTOM NAVIGATION */}
       <div className="absolute bottom-6 left-4 right-4 bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-full px-6 py-4 flex justify-between items-center z-40">
         {[
           { icon: Home, id: 'home' },
           { icon: Zap, id: 'recovery' },
           { icon: Swords, id: 'challenges' },
-          { icon: Users, id: 'community' } // <--- UPDATED THIS LINE
+          { icon: Users, id: 'community' }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <button 
-              key={tab.id} 
-              onClick={() => setActiveTab(tab.id)} 
-              className="relative p-2 flex flex-col items-center group"
-            >
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="relative p-2 flex flex-col items-center group">
               <tab.icon size={26} className={`transition-colors duration-300 ${isActive ? 'text-[#7D9C6D]' : 'text-gray-400 group-hover:text-gray-600'}`} />
-              {isActive && (
-                <motion.div layoutId="navIndicator" className="absolute -bottom-2 w-1 h-1 bg-[#7D9C6D] rounded-full" />
-              )}
+              {isActive && <motion.div layoutId="navIndicator" className="absolute -bottom-2 w-1 h-1 bg-[#7D9C6D] rounded-full" />}
             </button>
           );
         })}
       </div>
-      {/* NEW: Render CopingNow over everything if true */}
+
+      {/* COPING OVERLAY */}
       <AnimatePresence>
         {isCopingMode && <CopingNow onClose={() => setIsCopingMode(false)} />}
       </AnimatePresence>
@@ -384,15 +323,26 @@ const Dashboard = () => {
   );
 };
 
-
-// --- MAIN APP COMPONENT (Router) ---
+// --- APP COMPONENT (Onboarding Router) ---
 export default function App() {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({});
+  const [anchorImages, setAnchorImages] = useState([null, null, null, null]);
 
   const handleAnswer = (key, value) => {
     setAnswers(prev => ({ ...prev, [key]: value }));
     setTimeout(() => setStep(step + 1), 300);
+  };
+
+  const handleImageUpload = (index, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      const newImages = [...anchorImages];
+      newImages[index] = imageUrl;
+      setAnchorImages(newImages);
+      setAnswers(prev => ({ ...prev, anchors: newImages }));
+    }
   };
 
   useEffect(() => {
@@ -406,7 +356,6 @@ export default function App() {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center sm:p-4">
       <div className={wrapperClass}>
         
-        {/* Onboarding Steps 1-13 (Existing Code) */}
         {step === 1 && (
           <FadeIn>
             <div className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center relative">
@@ -528,11 +477,23 @@ export default function App() {
               <SpeechBubble text="When cravings hit, we'll remind you why you started. Upload photos of people or pets you love." />
               <BrainMascot expression="happy" className="w-24 h-24 mx-auto mb-8" />
               <div className="grid grid-cols-2 gap-4 mb-8">
-                {[1, 2, 3, 4].map((i) => (
-                  <button key={i} className="aspect-square bg-white border-2 border-dashed border-[#7D9C6D]/50 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#7D9C6D] hover:bg-[#7D9C6D]/10 transition-colors">
-                    <Camera size={28} />
-                    <span className="font-semibold text-sm">Upload</span>
-                  </button>
+                {anchorImages.map((imgUrl, index) => (
+                  <label key={index} className="aspect-square bg-white border-2 border-dashed border-[#7D9C6D]/50 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#7D9C6D] hover:bg-[#7D9C6D]/10 transition-colors cursor-pointer relative overflow-hidden group">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(index, e)} />
+                    {imgUrl ? (
+                      <>
+                        <img src={imgUrl} alt={`Anchor ${index + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white font-bold text-xs bg-black/50 px-3 py-1 rounded-full">Change</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Camera size={28} />
+                        <span className="font-semibold text-sm">Upload</span>
+                      </>
+                    )}
+                  </label>
                 ))}
               </div>
               <p className="text-center text-gray-500 text-sm mb-auto">These will only be used privately to help you stay strong.</p>
@@ -661,7 +622,6 @@ export default function App() {
                 <p className="text-lg text-gray-600 font-medium px-4">I'm here with you every step of the way. You are not alone.</p>
               </div>
               
-              {/* This button now triggers Step 14 - The Main Application Dashboard */}
               <div className="w-full pb-8 z-10">
                 <Button onClick={() => setStep(14)} className="py-5 text-xl shadow-[0_8px_30px_rgb(125,156,109,0.4)]">
                   ENTER DASHBOARD
@@ -679,18 +639,18 @@ export default function App() {
   );
 }
 
-// Extra icons used in dashboard
+// Extra Custom Icons
 function HeartPulse(props) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>
     </svg>
-  )
+  );
 }
 function DollarSign(props) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
     </svg>
-  )
+  );
 }
