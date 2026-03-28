@@ -20,6 +20,7 @@ import {
   Volume2,
   VolumeX,
   CheckCircle2,
+  Video,
 } from "lucide-react";
 import Mascot from "./components/Mascot";
 
@@ -105,7 +106,12 @@ const COPING_ACTIVITIES = [
 
 export default function CopingNow({ onClose }) {
   const [step, setStep] = useState(1);
-  const totalSteps = 6;
+  const totalSteps = 7; // Increased total steps to include the AI Call
+
+  // ** REPLACE THIS WITH YOUR BEYOND PRESENCE SHARE LINK **
+  const BEYOND_PRESENCE_URL =
+    "https://bey.chat/f415a1a8-9e10-487e-bc81-23ec74ff80b4";
+  const [isIframeActive, setIsIframeActive] = useState(false);
 
   // Random Data States
   const [randomData, setRandomData] = useState({
@@ -250,11 +256,17 @@ export default function CopingNow({ onClose }) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         handleNextActivity();
       } else {
-        setStep(5); // Move to resolution if all finished
+        setStep(5); // Move to AI Support instead of resolution
       }
     }
     return () => clearInterval(interval);
-  }, [step, isActivityActive, activityTimeLeft, currentActivityIndex, handleNextActivity]);
+  }, [
+    step,
+    isActivityActive,
+    activityTimeLeft,
+    currentActivityIndex,
+    handleNextActivity,
+  ]);
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
@@ -280,7 +292,7 @@ export default function CopingNow({ onClose }) {
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className="absolute inset-0 z-50 bg-white flex flex-col font-sans"
     >
-      {/* Universal Top Bar (Updated Cross Icon visibility) */}
+      {/* Universal Top Bar */}
       <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none">
         <button
           onClick={() => {
@@ -448,7 +460,7 @@ export default function CopingNow({ onClose }) {
           </motion.div>
         )}
 
-        {/* --- SCREEN 4: NEW Guided Activity Sequence --- */}
+        {/* --- SCREEN 4: Guided Activity Sequence --- */}
         {step === 4 &&
           (() => {
             const currentActivity = COPING_ACTIVITIES[currentActivityIndex];
@@ -464,7 +476,6 @@ export default function CopingNow({ onClose }) {
               >
                 {/* TOP HALF: Mascot & Speech */}
                 <div className="bg-gradient-to-b from-[#D9ECA2] to-[#FAFAFA] pt-24 pb-8 px-6 flex flex-col items-center justify-center relative">
-                  {/* Mute Toggle */}
                   <button
                     onClick={toggleMute}
                     className="absolute top-24 right-6 w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-[#7D9C6D] shadow-sm hover:bg-white/80 transition-colors"
@@ -499,7 +510,6 @@ export default function CopingNow({ onClose }) {
 
                 {/* BOTTOM HALF: Timer & Controls */}
                 <div className="flex-1 px-6 pb-24 flex flex-col items-center">
-                  {/* Activity Tracker Dots */}
                   <div className="flex gap-2 mb-8">
                     {COPING_ACTIVITIES.map((_, i) => (
                       <div
@@ -509,7 +519,6 @@ export default function CopingNow({ onClose }) {
                     ))}
                   </div>
 
-                  {/* Main Activity Card */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentActivity.id}
@@ -518,7 +527,6 @@ export default function CopingNow({ onClose }) {
                       exit={{ opacity: 0, y: -20 }}
                       className="w-full max-w-sm bg-white rounded-[32px] p-8 shadow-lg border border-gray-100 flex flex-col items-center text-center relative overflow-hidden"
                     >
-                      {/* Background Icon Watermark */}
                       <ActivityIcon
                         size={120}
                         className="absolute -right-6 -bottom-6 text-gray-50 opacity-50 pointer-events-none"
@@ -535,12 +543,10 @@ export default function CopingNow({ onClose }) {
                         {currentActivity.description}
                       </p>
 
-                      {/* Timer */}
                       <div className="text-6xl font-black text-[#7D9C6D] mb-8 font-mono tracking-tighter relative z-10 drop-shadow-sm">
                         {formatTime(activityTimeLeft)}
                       </div>
 
-                      {/* Player Controls */}
                       <div className="flex items-center gap-6 relative z-10">
                         <button
                           onClick={handlePrevActivity}
@@ -593,16 +599,90 @@ export default function CopingNow({ onClose }) {
             );
           })()}
 
-        {/* --- SCREEN 5: Resolution & Feedback --- */}
+        {/* --- NEW SCREEN 5: Embed Iframe for Beyond Presence --- */}
         {step === 5 && (
           <motion.div
             key="s5"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex-1 bg-[#FAFAFA] flex flex-col items-center justify-center pt-20 pb-6 px-4 relative"
+          >
+            {!isIframeActive ? (
+              // The "Choice" Screen before opening the call
+              <div className="flex-1 w-full max-w-sm flex flex-col items-center justify-center text-center">
+                <div className="w-24 h-24 bg-[#D9ECA2] rounded-[32px] flex items-center justify-center mb-6 shadow-md rotate-3">
+                  <Video size={40} className="text-[#7D9C6D]" />
+                </div>
+                <h2 className="text-3xl font-extrabold text-gray-800 mb-3">
+                  Live Mentor Support
+                </h2>
+                <p className="text-gray-500 font-medium mb-10 px-4">
+                  Do you want to talk it out? Connect with your AI mentor
+                  face-to-face to work through the rest of this craving.
+                </p>
+
+                <button
+                  onClick={() => setIsIframeActive(true)}
+                  className="w-full py-4 bg-[#7D9C6D] text-white rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(125,156,109,0.3)] hover:scale-[1.02] active:scale-95 transition-all mb-4"
+                >
+                  Yes, Connect Me
+                </button>
+                <button
+                  onClick={() => setStep(6)}
+                  className="w-full py-4 bg-white text-gray-500 rounded-2xl font-bold text-lg border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
+                >
+                  No thanks, skip to check-in
+                </button>
+              </div>
+            ) : (
+              // The active Iframe container
+              <div className="w-full h-full max-w-md bg-black rounded-3xl overflow-hidden shadow-2xl relative flex flex-col">
+                <div className="bg-gray-900 px-4 py-3 flex justify-between items-center text-white">
+                  <span className="font-bold flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>{" "}
+                    Live Session
+                  </span>
+                </div>
+
+                <iframe
+                  src={BEYOND_PRESENCE_URL}
+                  allow="microphone; camera"
+                  className="flex-1 w-full border-none"
+                  title="Beyond Presence Mentor"
+                />
+
+                <div className="bg-gray-900 p-4 flex justify-center">
+                  <button
+                    onClick={() => {
+                      setIsIframeActive(false);
+                      setStep(6);
+                    }}
+                    className="py-3 px-8 bg-white text-gray-900 font-bold rounded-xl shadow-md hover:bg-gray-100 active:scale-95 transition-transform"
+                  >
+                    End Call & Continue
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* --- SCREEN 6: Resolution & Feedback --- */}
+        {step === 6 && (
+          <motion.div
+            key="s6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="flex-1 bg-white flex flex-col items-center justify-center p-6 text-center relative"
           >
-            <Mascot emotion="thinking" context="coping" size={128} className="mb-8" />
+            <Mascot
+              emotion="thinking"
+              context="coping"
+              size={128}
+              className="mb-8"
+            />
             <h1 className="text-3xl font-extrabold text-gray-800 mb-2">
               Check-in time.
             </h1>
@@ -621,12 +701,12 @@ export default function CopingNow({ onClose }) {
                   "Deep Breathing",
                   "Playing Tetris",
                   "Cold Water",
-                  "Waiting it out",
+                  "Mentor Call",
                   "Other",
                 ].map((opt) => (
                   <button
                     key={opt}
-                    onClick={() => setStep(6)}
+                    onClick={() => setStep(7)}
                     className="p-3 bg-white shadow-sm rounded-2xl text-sm font-bold text-gray-600 hover:bg-[#7D9C6D] hover:text-white transition-all active:scale-95 border border-gray-100"
                   >
                     {opt}
@@ -637,10 +717,10 @@ export default function CopingNow({ onClose }) {
           </motion.div>
         )}
 
-        {/* --- SCREEN 6: Final Celebration w/ Real Confetti --- */}
-        {step === 6 && (
+        {/* --- SCREEN 7: Final Celebration w/ Real Confetti --- */}
+        {step === 7 && (
           <motion.div
-            key="s6"
+            key="s7"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -664,7 +744,12 @@ export default function CopingNow({ onClose }) {
             />
 
             <div className="relative z-20 flex flex-col items-center">
-              <Mascot emotion="excited" context="coping" size={192} className="mb-8" />
+              <Mascot
+                emotion="excited"
+                context="coping"
+                size={192}
+                className="mb-8"
+              />
               <h1 className="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">
                 You did it! 🎊
               </h1>
