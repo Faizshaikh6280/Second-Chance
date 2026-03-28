@@ -15,6 +15,7 @@ import {
   Wheat,
   X,
 } from "lucide-react";
+import useGamification from "./hooks/useGamification";
 
 const DAILY_GOALS = {
   calories: 2100,
@@ -347,6 +348,7 @@ function DietIcon(props) {
 }
 
 export default function DietPlan({ onBack }) {
+  const { awardProgress } = useGamification();
   const [selectedTimeline, setSelectedTimeline] = useState("all");
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [completedMeals, setCompletedMeals] = useState([]);
@@ -395,11 +397,22 @@ export default function DietPlan({ onBack }) {
   );
 
   const toggleMealCompletion = (mealId) => {
+    const isCompleting = !completedMeals.includes(mealId);
+
     setCompletedMeals((previous) =>
       previous.includes(mealId)
         ? previous.filter((id) => id !== mealId)
         : [...previous, mealId],
     );
+
+    if (isCompleting) {
+      awardProgress({
+        actionKey: `diet-meal-${mealId}`,
+        xp: 90,
+        gems: 6,
+        updates: { dietPlansFollowed: 1 },
+      });
+    }
   };
 
   return (

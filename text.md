@@ -10,4 +10,9 @@ don't break existing fearures or ui , ask if need any clarification.
 this changes should only done in step 4 , rest all steps should work perfectly.and independently.
 
 p3:
-I want to use my mascot image image, mentioned in public folder (each mascot image with differnet emotions), I want to use these mascot expressions
+I want to use my mascot image image, mentioned in public folder (each mascot image with differnet emotions), I want to use these mascot expressions in onboarding screeens,emergecy coping screens , instead of current masct , remove that mascot and use my image mascot in public folder with relevant expression. in home screens it will also show relevant emoji (like happy if user is doing all task regularly).
+
+it top right in home screees , a user profile with avatar image, when user will click it , will be shown his , whenever a user will do some acitivity, or do challange or follow a diet. an xps or gems will be added into his profile that will help user to stay consistent, it open as side navigation for user profile. also show cerficate to unloack on certain point collection and 'x' days streak. will unloack a certifcate for him.
+certificate will look like attached in given image. it should display clearly user name in cursive and showing that user completed a 30 days sober challange and earned 1000 xps. user can download certificate in pdf format.
+
+following

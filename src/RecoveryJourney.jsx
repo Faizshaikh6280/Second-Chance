@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Lock, Star, Shield, Wind, BookOpen, Activity } from 'lucide-react';
+import useGamification from './hooks/useGamification';
 
 // Mock Data for the Journey
 const INITIAL_JOURNEY = [
@@ -38,6 +39,7 @@ const INITIAL_JOURNEY = [
 ];
 
 export default function RecoveryJourney() {
+  const { awardProgress } = useGamification();
   const [journey, setJourney] = useState(INITIAL_JOURNEY);
   const [selectedDay, setSelectedDay] = useState(null);
 
@@ -70,6 +72,13 @@ export default function RecoveryJourney() {
        newJourney[selectedDay.weekIndex + 1].days[0].status = 'active';
     }
     
+    awardProgress({
+      actionKey: `journey-day-${selectedDay.id}`,
+      xp: 120,
+      gems: 8,
+      updates: { activitiesCompleted: 1 },
+    });
+
     setJourney(newJourney);
     setSelectedDay(null);
   };

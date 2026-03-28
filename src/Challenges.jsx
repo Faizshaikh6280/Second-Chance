@@ -4,6 +4,7 @@ import {
   Swords, Users, Clock, Trophy, ChevronRight, 
   CheckCircle2, Circle, Flame, ArrowLeft, Medal, Star, Sparkles
 } from 'lucide-react';
+import useGamification from './hooks/useGamification';
 
 // --- MOCK DATA ---
 const MOCK_CHALLENGES = [
@@ -89,6 +90,7 @@ const Badge = ({ text, theme }) => (
 );
 
 export default function Challenges() {
+  const { awardProgress } = useGamification();
   const [challenges, setChallenges] = useState(MOCK_CHALLENGES);
   const [activeTab, setActiveTab] = useState('active'); // active, upcoming, completed
   const [selectedChallenge, setSelectedChallenge] = useState(null);
@@ -102,8 +104,12 @@ export default function Challenges() {
   );
 
   const handleToggleTask = (challengeId, taskId) => {
+    let completedTaskReward = null;
+    let completedChallengeReward = null;
+
     setChallenges(prev => prev.map(c => {
       if (c.id !== challengeId) return c;
+      const wasFullyCompleted = c.tasks.length > 0 && c.tasks.every(task => task.done);
       const updatedTasks = c.tasks.map(t => {
         if (t.id === taskId) {
           const isCompleting = !t.done;
@@ -119,12 +125,41 @@ export default function Challenges() {
             setFloatingCoins(prevCoins => prevCoins.filter(coin => coin.id !== coinId));
           }, 1000);
 
+          if (isCompleting) {
+            completedTaskReward = {
+              actionKey: `challenge-task-${challengeId}-${taskId}`,
+              xp: t.points,
+              gems: Math.max(4, Math.round(t.points / 40)),
+              updates: { challengeMilestonesCompleted: 1 },
+            };
+          }
+
           return { ...t, done: isCompleting };
         }
         return t;
       });
+
+      const isNowFullyCompleted = updatedTasks.length > 0 && updatedTasks.every(task => task.done);
+
+      if (isNowFullyCompleted && !wasFullyCompleted) {
+        completedChallengeReward = {
+          actionKey: `challenge-complete-${challengeId}`,
+          xp: 180,
+          gems: 18,
+          updates: { completedChallenges: 1 },
+        };
+      }
+
       return { ...c, tasks: updatedTasks };
     }));
+
+    if (completedTaskReward) {
+      awardProgress(completedTaskReward);
+    }
+
+    if (completedChallengeReward) {
+      awardProgress(completedChallengeReward);
+    }
   };
 
   const handleJoin = (e, challengeId) => {
@@ -133,6 +168,12 @@ export default function Challenges() {
       c.id === challengeId ? { ...c, isRegistered: true, status: 'active' } : c
     ));
     setActiveTab('active');
+    awardProgress({
+      actionKey: `challenge-join-${challengeId}`,
+      xp: 50,
+      gems: 5,
+      updates: { challengeMilestonesCompleted: 1 },
+    });
   };
 
   return (

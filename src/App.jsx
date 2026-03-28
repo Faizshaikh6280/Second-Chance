@@ -19,6 +19,9 @@ import Challenges from './Challenges';
 import Community from './Community';
 import CopingNow from './CopingNow';
 import DietPlan from './DietPlan';
+import Mascot from './components/Mascot';
+import ProfileSidebar from './components/ProfileSidebar';
+import useGamification from './hooks/useGamification';
 
 const DASHBOARD_ROUTE = '/';
 const DIET_ROUTE = '/diet';
@@ -32,52 +35,6 @@ const navigateToPath = (path, replace = false) => {
 
   const navigationMethod = replace ? 'replaceState' : 'pushState';
   window.history[navigationMethod]({}, '', path);
-};
-
-// --- MASCOT COMPONENT ---
-const BrainMascot = ({ className = "", expression = "happy", action = "none" }) => {
-  const isGlowing = expression === 'glowing';
-  const isSleepy = expression === 'sleepy';
-
-  return (
-    <div className={`relative flex justify-center items-center ${className} ${isSleepy ? 'animate-[pulse_4s_ease-in-out_infinite]' : 'animate-[bounce_3s_ease-in-out_infinite]'}`}>
-      {isGlowing && <div className="absolute inset-0 bg-yellow-300 rounded-full blur-2xl opacity-40 animate-pulse"></div>}
-      
-      <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-        <path d="M60 90C87.6142 90 110 72.0914 110 50C110 27.9086 87.6142 10 60 10C32.3858 10 10 27.9086 10 50C10 72.0914 32.3858 90 60 90Z" fill={isGlowing ? "#F3D79C" : "#F9A8D4"}/>
-        <path d="M30 30C40 20 50 15 60 15C70 15 80 20 90 30" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
-        <path d="M25 50C40 45 50 45 60 50C70 55 80 55 95 50" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
-        <path d="M35 70C45 75 50 75 60 70C70 65 80 65 85 70" stroke={isGlowing ? "#E5B96E" : "#F472B6"} strokeWidth="6" strokeLinecap="round"/>
-        
-        <circle cx="35" cy="55" r="8" fill="#B25349" opacity="0.4"/>
-        <circle cx="85" cy="55" r="8" fill="#B25349" opacity="0.4"/>
-        
-        {isSleepy ? (
-          <>
-            <path d="M40 45 Q 45 48 50 45" stroke="#403931" strokeWidth="3" strokeLinecap="round" fill="none"/>
-            <path d="M70 45 Q 75 48 80 45" stroke="#403931" strokeWidth="3" strokeLinecap="round" fill="none"/>
-          </>
-        ) : (
-          <>
-            <circle cx="45" cy="45" r="5" fill="#403931" className="animate-[pulse_4s_ease-in-out_infinite]"/>
-            <circle cx="75" cy="45" r="5" fill="#403931" className="animate-[pulse_4s_ease-in-out_infinite]"/>
-          </>
-        )}
-        
-        {(expression === 'happy' || expression === 'glowing' || expression === 'energetic') && <path d="M55 55Q60 60 65 55" stroke="#403931" strokeWidth="3" strokeLinecap="round"/>}
-        {expression === 'thinking' && <circle cx="60" cy="58" r="2" fill="#403931"/>}
-        {expression === 'concerned' && <path d="M55 58Q60 55 65 58" stroke="#403931" strokeWidth="3" strokeLinecap="round"/>}
-        {expression === 'sleepy' && <circle cx="60" cy="57" r="3" fill="#403931" opacity="0.5"/>}
-      </svg>
-
-      {action === 'reading' && (
-        <div className="absolute -bottom-2 w-10 h-6 bg-white border-2 border-gray-200 rounded shadow-sm z-20" style={{ transform: 'rotate(-10deg)'}}></div>
-      )}
-      {action === 'sleeping' && (
-        <div className="absolute -top-4 right-0 font-bold text-gray-400 animate-bounce">Zzz</div>
-      )}
-    </div>
-  );
 };
 
 // --- REUSABLE UI COMPONENTS ---
@@ -161,18 +118,17 @@ const TaskCard = ({ task, onComplete }) => (
 );
 
 // --- MAIN DASHBOARD (Step 14) ---
-const Dashboard = ({ activeTab, onTabChange, onOpenDiet }) => {
+const Dashboard = ({ activeTab, onTabChange, onOpenDiet, onOpenProfile }) => {
   const [isCopingMode, setIsCopingMode] = useState(false);
-  
-  const streakDays = 12;
+  const { userProfile, awardProgress } = useGamification();
+  const streakDays = userProfile.streakDays;
   const hour = new Date().getHours();
   
   let timePhase = 'Morning';
-  let mascotAction = 'stretching';
   let greeting = "Ready for a fresh start today?";
-  if (hour >= 12 && hour < 17) { timePhase = 'Afternoon'; mascotAction = 'reading'; greeting = "Keep your focus strong!"; }
-  else if (hour >= 17 && hour < 21) { timePhase = 'Evening'; mascotAction = 'meditating'; greeting = "Time to wind down and reflect."; }
-  else if (hour >= 21 || hour < 5) { timePhase = 'Night'; mascotAction = 'sleeping'; greeting = "Rest well, you earned it."; }
+  if (hour >= 12 && hour < 17) { timePhase = 'Afternoon'; greeting = "Keep your focus strong!"; }
+  else if (hour >= 17 && hour < 21) { timePhase = 'Evening'; greeting = "Time to wind down and reflect."; }
+  else if (hour >= 21 || hour < 5) { timePhase = 'Night'; greeting = "Rest well, you earned it."; }
 
   const [tasks, setTasks] = useState([
     { id: 1, title: '3 minute breathing', time: 'Morning', icon: Wind, completed: true },
@@ -181,7 +137,31 @@ const Dashboard = ({ activeTab, onTabChange, onOpenDiet }) => {
     { id: 4, title: 'Craving prevention', time: 'Night', icon: Moon, completed: false },
   ]);
 
-  const toggleTask = (id) => setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const homeEmotion = timePhase === 'Night'
+    ? 'sleep'
+    : completedTasks >= 3
+      ? 'happy'
+      : completedTasks >= 2
+        ? 'smile'
+        : 'sad';
+  const moodEmoji = completedTasks >= 3 ? '😊' : completedTasks >= 2 ? '😐' : '😟';
+
+  const toggleTask = (id) => {
+    const targetTask = tasks.find(task => task.id === id);
+    const isCompleting = targetTask && !targetTask.completed;
+
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+
+    if (isCompleting) {
+      awardProgress({
+        actionKey: `dashboard-task-${id}`,
+        xp: 60,
+        gems: 4,
+        updates: { activitiesCompleted: 1 },
+      });
+    }
+  };
 
   const cravingData = [{ day: 'Mon', intensity: 8 }, { day: 'Tue', intensity: 7 }, { day: 'Wed', intensity: 5 }, { day: 'Thu', intensity: 6 }, { day: 'Fri', intensity: 4 }, { day: 'Sat', intensity: 3 }, { day: 'Sun', intensity: 2 }];
   const moodData = [{ day: 'Mon', mood: 1 }, { day: 'Tue', mood: 2 }, { day: 'Wed', mood: 3 }, { day: 'Thu', mood: 2 }, { day: 'Fri', mood: 4 }, { day: 'Sat', mood: 4 }];
@@ -208,14 +188,25 @@ const Dashboard = ({ activeTab, onTabChange, onOpenDiet }) => {
                 <h1 className="text-xl font-extrabold text-gray-800">Days Sober</h1>
               </div>
             </div>
-            <BrainMascot expression="energetic" className="w-12 h-12" />
+            <button
+              onClick={onOpenProfile}
+              className="relative rounded-[24px] border border-gray-100 bg-white p-1.5 shadow-sm transition-transform hover:scale-[1.02]"
+            >
+              <img src={userProfile.avatarImage} alt={userProfile.name} className="h-12 w-12 rounded-[18px] object-cover" />
+              <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#EEF6DA] text-sm shadow-sm">
+                {moodEmoji}
+              </span>
+            </button>
           </div>
 
           <div className="p-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-gradient-to-b from-[#D9ECA2]/40 to-white rounded-[32px] p-6 shadow-sm border border-white relative overflow-hidden flex flex-col items-center text-center">
               <SpeechBubble text={greeting} />
-              <BrainMascot action={mascotAction} expression={timePhase === 'Night' ? 'sleepy' : 'happy'} className="w-32 h-32 my-4" />
-              <p className="font-bold text-gray-700">Good {timePhase}!</p>
+              <Mascot emotion={homeEmotion} context="home" size={144} className="my-4" />
+              <div className="flex items-center gap-2">
+                <p className="font-bold text-gray-700">Good {timePhase}!</p>
+                <span className="rounded-full bg-white/80 px-2.5 py-1 text-sm shadow-sm">{moodEmoji}</span>
+              </div>
             </motion.div>
           </div>
 
@@ -345,6 +336,7 @@ export default function App() {
   const [step, setStep] = useState(1);
   const [route, setRoute] = useState(() => getAppRoute());
   const [dashboardTab, setDashboardTab] = useState('home');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [addedContacts, setAddedContacts] = useState([]);
 
   const toggleContact = (role) => {
@@ -401,7 +393,7 @@ export default function App() {
               <div className="relative z-10 flex flex-col items-center">
                 <div className="relative">
                   <div className="absolute -inset-4 rounded-full border-4 border-[#7D9C6D]/20 animate-[ping_3s_ease-in-out_infinite]"></div>
-                  <BrainMascot className="w-32 h-32 mb-8" />
+                  <Mascot emotion="smile" context="onboarding" size={128} className="mb-8" />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-800 text-center mb-2">Welcome to your<br/>healing journey</h1>
                 <p className="text-[#7D9C6D] font-medium text-sm animate-pulse mt-8">Preparing your safe space...</p>
@@ -415,7 +407,7 @@ export default function App() {
             <div className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col p-6 pt-20">
               <div className="flex-1 flex flex-col items-center justify-center mt-10">
                 <SpeechBubble text="Hi there. I'm your tiny brain companion. I'm here to help you heal." />
-                <BrainMascot className="w-40 h-40 mt-4 mb-8" />
+                <Mascot emotion="welcoming" context="onboarding" size={160} className="mt-4 mb-8" />
                 <p className="text-center text-gray-500 font-medium px-4 mb-12">We'll ask a few quick questions to build your personal recovery plan.</p>
               </div>
               <div className="pb-8"><Button onClick={() => setStep(3)} icon={Leaf}>Let's Begin</Button></div>
@@ -428,7 +420,7 @@ export default function App() {
             <ProgressBar step={1} />
             <div className="flex-1 p-6 flex flex-col overflow-y-auto pb-24 shadow-inner">
               <SpeechBubble text="What habit are you trying to overcome?" />
-              <BrainMascot expression="thinking" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="thinking" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-1">
                 <MCQCard icon={Beer} title="Alcohol" onClick={() => handleAnswer('type', 'alcohol')} />
                 <MCQCard icon={Cigarette} title="Smoking / Nicotine" onClick={() => handleAnswer('type', 'smoking')} />
@@ -446,7 +438,7 @@ export default function App() {
             <ProgressBar step={2} />
             <div className="flex-1 p-6 flex flex-col overflow-y-auto pb-24 shadow-inner">
               <SpeechBubble text="How long have you been struggling with this?" />
-              <BrainMascot expression="concerned" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="concerned" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-1">
                 <MCQCard icon={Clock} title="Less than 6 months" onClick={() => handleAnswer('duration', '<6m')} />
                 <MCQCard icon={Clock} title="6 months – 1 year" onClick={() => handleAnswer('duration', '6m-1y')} />
@@ -463,7 +455,7 @@ export default function App() {
             <ProgressBar step={3} />
             <div className="flex-1 p-6 flex flex-col overflow-y-auto pb-24 shadow-inner">
               <SpeechBubble text="When do cravings usually hit the hardest?" />
-              <BrainMascot expression="thinking" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="thinking" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-1">
                 <MCQCard icon={Sunrise} title="Morning" onClick={() => handleAnswer('time', 'morning')} />
                 <MCQCard icon={Sun} title="Afternoon" onClick={() => handleAnswer('time', 'afternoon')} />
@@ -480,7 +472,7 @@ export default function App() {
             <ProgressBar step={4} />
             <div className="flex-1 p-6 flex flex-col overflow-y-auto pb-24 shadow-inner">
               <SpeechBubble text="What usually triggers your cravings?" />
-              <BrainMascot expression="concerned" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="concerned" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-1">
                 <MCQCard icon={Frown} title="Stress" onClick={() => handleAnswer('trigger', 'stress')} />
                 <MCQCard icon={CloudRain} title="Loneliness" onClick={() => handleAnswer('trigger', 'loneliness')} />
@@ -497,7 +489,7 @@ export default function App() {
             <ProgressBar step={5} />
             <div className="flex-1 p-6 flex flex-col overflow-y-auto pb-24 shadow-inner">
               <SpeechBubble text="Why do you want to quit?" />
-              <BrainMascot expression="happy" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="happy" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-1">
                 <MCQCard icon={Heart} title="Family & Loved Ones" onClick={() => handleAnswer('motivation', 'family')} />
                 <MCQCard icon={Activity} title="Health & Body" onClick={() => handleAnswer('motivation', 'health')} />
@@ -513,7 +505,7 @@ export default function App() {
           <FadeIn>
             <div className="flex-1 bg-[#D9ECA2]/20 flex flex-col p-6 pt-12 overflow-y-auto">
               <SpeechBubble text="When cravings hit, we'll remind you why you started. Upload photos of people or pets you love." />
-              <BrainMascot expression="happy" className="w-24 h-24 mx-auto mb-8" />
+              <Mascot emotion="happy" context="onboarding" size={96} className="mx-auto mb-8" />
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {anchorImages.map((imgUrl, index) => (
                   <label key={index} className="aspect-square bg-white border-2 border-dashed border-[#7D9C6D]/50 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#7D9C6D] hover:bg-[#7D9C6D]/10 transition-colors cursor-pointer relative overflow-hidden group">
@@ -544,7 +536,7 @@ export default function App() {
           <FadeIn>
             <div className="flex-1 p-6 pt-12 flex flex-col overflow-y-auto shadow-inner">
               <SpeechBubble text="Who should we contact if you're struggling?" />
-              <BrainMascot expression="thinking" className="w-24 h-24 mx-auto mb-6" />
+              <Mascot emotion="thinking" context="onboarding" size={96} className="mx-auto mb-6" />
               <div className="space-y-4 mb-auto">
                 {['Family Member', 'Trusted Friend', 'Therapist', 'Sponsor / Mentor'].map((role) => {
                   const isAdded = addedContacts.includes(role);
@@ -576,7 +568,7 @@ export default function App() {
             <div className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center px-6 text-center">
               <div className="relative mb-8">
                 <div className="absolute inset-0 border-4 border-dashed border-[#7D9C6D] rounded-full animate-[spin_8s_linear_infinite]"></div>
-                <BrainMascot className="w-32 h-32 p-4" expression="thinking" />
+                <Mascot emotion="thinking" context="onboarding" size={128} className="p-4" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Building your recovery plan...</h2>
               <p className="text-[#7D9C6D] font-medium">This may take a moment.</p>
@@ -657,7 +649,7 @@ export default function App() {
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md"><span className="text-2xl font-black text-orange-400">1</span></div>
                   <div><h2 className="text-gray-500 font-bold tracking-wider text-sm">WEEK 1</h2><h1 className="text-2xl font-extrabold text-gray-800">Stabilize Cravings</h1></div>
                 </div>
-                <BrainMascot className="absolute -bottom-10 right-8 w-24 h-24 drop-shadow-lg" />
+                <Mascot emotion="smile" context="onboarding" size={96} className="absolute -bottom-10 right-8" />
               </div>
               <div className="flex-1 p-6 pt-16 overflow-y-auto">
                 <h3 className="font-bold text-gray-800 text-lg mb-4">Your daily goals:</h3>
@@ -704,7 +696,7 @@ export default function App() {
                  <style>{`@keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(800px) rotate(360deg); opacity: 0; } }`}</style>
               </div>
               <div className="relative z-10 flex flex-col items-center mt-12 mb-auto">
-                <BrainMascot className="w-48 h-48 mb-8" expression="glowing" />
+                <Mascot emotion="excited" context="onboarding" size={192} className="mb-8" />
                 <h1 className="text-3xl font-extrabold text-gray-800 mb-4 tracking-tight leading-tight">Your recovery journey<br/>begins today.</h1>
                 <p className="text-lg text-gray-600 font-medium px-4">I'm here with you every step of the way. You are not alone.</p>
               </div>
@@ -727,8 +719,13 @@ export default function App() {
               activeTab={dashboardTab}
               onTabChange={setDashboardTab}
               onOpenDiet={() => navigateTo(DIET_ROUTE)}
+              onOpenProfile={() => setIsProfileOpen(true)}
             />
           )
+        )}
+
+        {step === 14 && (
+          <ProfileSidebar isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
         )}
 
       </div>

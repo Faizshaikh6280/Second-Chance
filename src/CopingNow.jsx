@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Confetti from "react-confetti";
 import {
@@ -21,6 +21,7 @@ import {
   VolumeX,
   CheckCircle2,
 } from "lucide-react";
+import Mascot from "./components/Mascot";
 
 // --- DATA ARRAYS FOR RANDOMIZATION ---
 const EMOTIONAL_VIDEOS = [
@@ -101,114 +102,6 @@ const COPING_ACTIVITIES = [
       "Go chug a massive glass of cold water. Dehydration makes anxiety and cravings feel so much worse. Drink it down, take a deep breath, and feel the control returning to your body. I'm so proud of you.",
   },
 ];
-
-// --- MASCOT COMPONENT ---
-const BrainMascot = ({ className = "", expression = "happy", style }) => (
-  <motion.div
-    style={style}
-    className={`relative flex justify-center items-center ${className} animate-[bounce_3s_ease-in-out_infinite]`}
-  >
-    <svg
-      width="120"
-      height="100"
-      viewBox="0 0 120 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="relative z-10"
-    >
-      <path
-        d="M60 90C87.6142 90 110 72.0914 110 50C110 27.9086 87.6142 10 60 10C32.3858 10 10 27.9086 10 50C10 72.0914 32.3858 90 60 90Z"
-        fill="#F9A8D4"
-      />
-      <path
-        d="M30 30C40 20 50 15 60 15C70 15 80 20 90 30"
-        stroke="#F472B6"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M25 50C40 45 50 45 60 50C70 55 80 55 95 50"
-        stroke="#F472B6"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M35 70C45 75 50 75 60 70C70 65 80 65 85 70"
-        stroke="#F472B6"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-      <circle cx="35" cy="55" r="8" fill="#B25349" opacity="0.4" />
-      <circle cx="85" cy="55" r="8" fill="#B25349" opacity="0.4" />
-      {expression === "sleepy" ? (
-        <>
-          <path
-            d="M40 45 Q 45 48 50 45"
-            stroke="#403931"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <path
-            d="M70 45 Q 75 48 80 45"
-            stroke="#403931"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </>
-      ) : (
-        <>
-          <circle
-            cx="45"
-            cy="45"
-            r="5"
-            fill="#403931"
-            className="animate-[pulse_4s_ease-in-out_infinite]"
-          />
-          <circle
-            cx="75"
-            cy="45"
-            r="5"
-            fill="#403931"
-            className="animate-[pulse_4s_ease-in-out_infinite]"
-          />
-        </>
-      )}
-      {(expression === "happy" || expression === "cheering") && (
-        <path
-          d="M55 55Q60 60 65 55"
-          stroke="#403931"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-      )}
-      {expression === "speaking" && (
-        <ellipse
-          cx="60"
-          cy="58"
-          rx="6"
-          ry="8"
-          fill="#403931"
-          className="animate-[pulse_0.5s_ease-in-out_infinite]"
-        />
-      )}
-      {expression === "breathing" && (
-        <circle cx="60" cy="57" r="4" fill="#403931" />
-      )}
-    </svg>
-    {expression === "cheering" && (
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 1 }}
-        className="absolute -top-4 -right-2 text-2xl z-20"
-      >
-        ✨
-      </motion.div>
-    )}
-  </motion.div>
-);
 
 export default function CopingNow({ onClose }) {
   const [step, setStep] = useState(1);
@@ -327,6 +220,22 @@ export default function CopingNow({ onClose }) {
     };
   }, [step, currentActivityIndex, isMuted]);
 
+  const handleNextActivity = useCallback(() => {
+    if (currentActivityIndex < COPING_ACTIVITIES.length - 1) {
+      setCurrentActivityIndex((prev) => prev + 1);
+      setActivityTimeLeft(120);
+      setIsActivityActive(true);
+    }
+  }, [currentActivityIndex]);
+
+  const handlePrevActivity = useCallback(() => {
+    if (currentActivityIndex > 0) {
+      setCurrentActivityIndex((prev) => prev - 1);
+      setActivityTimeLeft(120);
+      setIsActivityActive(true);
+    }
+  }, [currentActivityIndex]);
+
   // Step 4 Timer
   useEffect(() => {
     let interval;
@@ -338,30 +247,14 @@ export default function CopingNow({ onClose }) {
     } else if (activityTimeLeft === 0 && isActivityActive) {
       // Auto-advance to next activity when timer hits 0
       if (currentActivityIndex < COPING_ACTIVITIES.length - 1) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         handleNextActivity();
       } else {
         setStep(5); // Move to resolution if all finished
       }
     }
     return () => clearInterval(interval);
-  }, [step, isActivityActive, activityTimeLeft, currentActivityIndex]);
-
-  // Step 4 Handlers
-  const handleNextActivity = () => {
-    if (currentActivityIndex < COPING_ACTIVITIES.length - 1) {
-      setCurrentActivityIndex((prev) => prev + 1);
-      setActivityTimeLeft(120);
-      setIsActivityActive(true);
-    }
-  };
-
-  const handlePrevActivity = () => {
-    if (currentActivityIndex > 0) {
-      setCurrentActivityIndex((prev) => prev - 1);
-      setActivityTimeLeft(120);
-      setIsActivityActive(true);
-    }
-  };
+  }, [step, isActivityActive, activityTimeLeft, currentActivityIndex, handleNextActivity]);
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
@@ -427,9 +320,11 @@ export default function CopingNow({ onClose }) {
                   allowFullScreen
                 ></iframe>
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/40 pointer-events-none">
-                  <BrainMascot
-                    expression="happy"
-                    className="w-24 h-24 mb-6 drop-shadow-2xl"
+                  <Mascot
+                    emotion="supportive"
+                    context="coping"
+                    size={96}
+                    className="mb-6"
                   />
                   <h2 className="text-3xl font-extrabold text-white mb-2 leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
                     Remember your "Why"
@@ -520,11 +415,12 @@ export default function CopingNow({ onClose }) {
                 transition={{ duration: 4, ease: "easeInOut" }}
                 className="absolute inset-4 bg-[#D9ECA2] rounded-full opacity-80"
               />
-              <BrainMascot
-                expression="breathing"
+              <motion.div
                 style={{ scale: breathePhase === "Inhale..." ? 1.1 : 0.9 }}
-                className="w-32 h-32 relative z-20 transition-transform duration-[4000ms] ease-in-out"
-              />
+                className="relative z-20 transition-transform duration-[4000ms] ease-in-out"
+              >
+                <Mascot emotion="supportive" context="coping" size={128} />
+              </motion.div>
             </div>
             <motion.h1
               key={breathePhase}
@@ -577,9 +473,10 @@ export default function CopingNow({ onClose }) {
                   </button>
 
                   <div className="relative mb-6">
-                    <BrainMascot
-                      expression={isSpeaking ? "speaking" : "happy"}
-                      className="w-32 h-32 drop-shadow-xl"
+                    <Mascot
+                      emotion={isSpeaking ? "thinking" : "supportive"}
+                      context="coping"
+                      size={128}
                     />
                     {isSpeaking && (
                       <motion.div
@@ -705,10 +602,7 @@ export default function CopingNow({ onClose }) {
             exit={{ opacity: 0 }}
             className="flex-1 bg-white flex flex-col items-center justify-center p-6 text-center relative"
           >
-            <BrainMascot
-              expression="thinking"
-              className="w-32 h-32 mb-8 drop-shadow-md"
-            />
+            <Mascot emotion="thinking" context="coping" size={128} className="mb-8" />
             <h1 className="text-3xl font-extrabold text-gray-800 mb-2">
               Check-in time.
             </h1>
@@ -770,10 +664,7 @@ export default function CopingNow({ onClose }) {
             />
 
             <div className="relative z-20 flex flex-col items-center">
-              <BrainMascot
-                expression="cheering"
-                className="w-48 h-48 mb-8 drop-shadow-2xl"
-              />
+              <Mascot emotion="excited" context="coping" size={192} className="mb-8" />
               <h1 className="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">
                 You did it! 🎊
               </h1>
