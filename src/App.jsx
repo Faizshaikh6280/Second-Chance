@@ -18,6 +18,21 @@ import RecoveryJourney from './RecoveryJourney';
 import Challenges from './Challenges';
 import Community from './Community';
 import CopingNow from './CopingNow';
+import DietPlan from './DietPlan';
+
+const DASHBOARD_ROUTE = '/';
+const DIET_ROUTE = '/diet';
+
+const getAppRoute = () => (window.location.pathname === DIET_ROUTE ? DIET_ROUTE : DASHBOARD_ROUTE);
+
+const navigateToPath = (path, replace = false) => {
+  if (window.location.pathname === path) {
+    return;
+  }
+
+  const navigationMethod = replace ? 'replaceState' : 'pushState';
+  window.history[navigationMethod]({}, '', path);
+};
 
 // --- MASCOT COMPONENT ---
 const BrainMascot = ({ className = "", expression = "happy", action = "none" }) => {
@@ -146,8 +161,7 @@ const TaskCard = ({ task, onComplete }) => (
 );
 
 // --- MAIN DASHBOARD (Step 14) ---
-const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('home');
+const Dashboard = ({ activeTab, onTabChange, onOpenDiet }) => {
   const [isCopingMode, setIsCopingMode] = useState(false);
   
   const streakDays = 12;
@@ -292,15 +306,20 @@ const Dashboard = () => {
 
       {/* BOTTOM NAVIGATION */}
       <div className="absolute bottom-6 left-4 right-4 bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-full px-6 py-4 flex justify-between items-center z-40">
-        {[
+        {[ 
           { icon: Home, id: 'home' },
           { icon: Zap, id: 'recovery' },
           { icon: Swords, id: 'challenges' },
-          { icon: Users, id: 'community' }
+          { icon: Users, id: 'community' },
+          { icon: DietTabIcon, id: 'diet' }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="relative p-2 flex flex-col items-center group">
+            <button
+              key={tab.id}
+              onClick={() => (tab.id === 'diet' ? onOpenDiet() : onTabChange(tab.id))}
+              className="relative p-2 flex flex-col items-center group"
+            >
               <tab.icon size={26} className={`transition-colors duration-300 ${isActive ? 'text-[#7D9C6D]' : 'text-gray-400 group-hover:text-gray-600'}`} />
               {isActive && <motion.div layoutId="navIndicator" className="absolute -bottom-2 w-1 h-1 bg-[#7D9C6D] rounded-full" />}
             </button>
@@ -324,6 +343,8 @@ const Dashboard = () => {
 // --- APP COMPONENT (Onboarding Router) ---
 export default function App() {
   const [step, setStep] = useState(1);
+  const [route, setRoute] = useState(() => getAppRoute());
+  const [dashboardTab, setDashboardTab] = useState('home');
   const [addedContacts, setAddedContacts] = useState([]);
 
   const toggleContact = (role) => {
@@ -354,6 +375,18 @@ export default function App() {
     if (step === 1) { const timer = setTimeout(() => setStep(2), 3500); return () => clearTimeout(timer); }
     if (step === 10) { const timer = setTimeout(() => setStep(11), 4000); return () => clearTimeout(timer); }
   }, [step]);
+
+  useEffect(() => {
+    const handlePopState = () => setRoute(getAppRoute());
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (path, options = {}) => {
+    navigateToPath(path, options.replace);
+    setRoute(path);
+  };
 
   const wrapperClass = "w-full max-w-[390px] mx-auto h-[100dvh] sm:h-[844px] sm:my-8 sm:rounded-[40px] shadow-2xl overflow-hidden relative bg-white flex flex-col font-sans";
 
@@ -686,7 +719,17 @@ export default function App() {
         )}
 
         {/* --- STEP 14: THE MAIN APPLICATION DASHBOARD --- */}
-        {step === 14 && <Dashboard />}
+        {step === 14 && (
+          route === DIET_ROUTE ? (
+            <DietPlan onBack={() => navigateTo(DASHBOARD_ROUTE)} />
+          ) : (
+            <Dashboard
+              activeTab={dashboardTab}
+              onTabChange={setDashboardTab}
+              onOpenDiet={() => navigateTo(DIET_ROUTE)}
+            />
+          )
+        )}
 
       </div>
     </div>
@@ -705,6 +748,18 @@ function DollarSign(props) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+  );
+}
+
+function DietTabIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3c0 4.2 1.7 6.8 5 7.5" />
+      <path d="M17 3c0 4.2-1.7 6.8-5 7.5" />
+      <path d="M12 10.5V21" />
+      <path d="M8 21h8" />
+      <path d="M7.5 6.5C8.8 5 10.3 4.2 12 4.2s3.2.8 4.5 2.3" />
     </svg>
   );
 }

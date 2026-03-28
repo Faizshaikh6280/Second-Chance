@@ -1,22 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Confetti from 'react-confetti';
-import { 
-  X, Play, Pause, RotateCcw, Droplet, Wind, Brain, 
-  ArrowRight, Heart, Gamepad2, Snowflake, Eye, Quote
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Confetti from "react-confetti";
+import {
+  X,
+  Play,
+  Pause,
+  RotateCcw,
+  Droplet,
+  Wind,
+  Brain,
+  ArrowRight,
+  Heart,
+  Gamepad2,
+  Snowflake,
+  Eye,
+  Quote,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  CheckCircle2,
+} from "lucide-react";
 
 // --- DATA ARRAYS FOR RANDOMIZATION ---
 const EMOTIONAL_VIDEOS = [
   "https://www.youtube.com/embed/I3W5EVzlQm0?autoplay=1&loop=1&playlist=I3W5EVzlQm0&controls=0",
   "https://www.youtube.com/embed/-ch4NqzdhA8?autoplay=1&loop=1&playlist=-ch4NqzdhA8&controls=0",
-  "https://www.youtube.com/embed/dVHjZFU7VRg?autoplay=1&loop=1&playlist=dVHjZFU7VRg&controls=0"
+  "https://www.youtube.com/embed/dVHjZFU7VRg?autoplay=1&loop=1&playlist=dVHjZFU7VRg&controls=0",
 ];
 
 const MOTIVATIONAL_VIDEOS = [
   "https://www.youtube.com/embed/nHS1uJeYGFM?autoplay=1&loop=1&playlist=nHS1uJeYGFM&controls=0",
   "https://www.youtube.com/embed/-m_sgiO0fHM?autoplay=1&loop=1&playlist=-m_sgiO0fHM&controls=0",
-  "https://www.youtube.com/embed/gARdaMGnBjs?autoplay=1&loop=1&playlist=gARdaMGnBjs&controls=0"
+  "https://www.youtube.com/embed/gARdaMGnBjs?autoplay=1&loop=1&playlist=gARdaMGnBjs&controls=0",
 ];
 
 const QUOTES = [
@@ -25,7 +41,7 @@ const QUOTES = [
   "Courage doesn't always roar. Sometimes it's the quiet voice saying 'I will try again.'",
   "You are not your thoughts. You are the observer of your thoughts.",
   "Fall seven times, stand up eight. You've got this.",
-  "Discipline is choosing between what you want now, and what you want most."
+  "Discipline is choosing between what you want now, and what you want most.",
 ];
 
 const AFFIRMATIONS = [
@@ -34,75 +50,215 @@ const AFFIRMATIONS = [
   "Amazing job surfing that urge! 🌊",
   "You chose your future over a temporary feeling! ✨",
   "Victory! You are taking your life back! 🏆",
-  "You did the hard thing, and you won! 🥳"
+  "You did the hard thing, and you won! 🥳",
 ];
 
+// --- STEP 4 GUIDED ACTIVITIES DATA ---
+const COPING_ACTIVITIES = [
+  {
+    id: 1,
+    title: "Ice Dive Reflex",
+    icon: Snowflake,
+    description:
+      "Splash cold water on your face. This activates the mammalian dive reflex, instantly slowing your heart rate.",
+    spokenText:
+      "Let's reset your nervous system. Go splash some freezing cold water on your face right now. I know it sounds intense, but it instantly drops your heart rate and kills the craving. You can do this!",
+  },
+  {
+    id: 2,
+    title: "Visual Distraction",
+    icon: Gamepad2,
+    description:
+      "Play a highly visual game like Tetris. This disrupts the visual imagery of the craving in your brain.",
+    spokenText:
+      "Time for a distraction! Play Tetris or a fast-paced game on your phone for the next two minutes. Focus completely on the shapes and colors. Show that craving who is boss!",
+  },
+  {
+    id: 3,
+    title: "Sensory Shock",
+    icon: Brain,
+    description:
+      "Chew strong mint gum or bite a lemon. The intense flavor shocks your sensory system and derails the urge.",
+    spokenText:
+      "Grab some strong mint gum, a sour candy, or even a lemon. The intense flavor will shock your senses and snap your brain out of the urge loop. Go grab it now, I'll wait right here!",
+  },
+  {
+    id: 4,
+    title: "5-4-3-2-1 Grounding",
+    icon: Eye,
+    description:
+      "Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, and 1 you taste.",
+    spokenText:
+      "Let's ground ourselves in the present moment. Look around and say out loud: 5 things you can see, 4 things you can feel, 3 you can hear, 2 you can smell, and 1 you can taste. Stay with me, you are safe.",
+  },
+  {
+    id: 5,
+    title: "Power Hydration",
+    icon: Droplet,
+    description:
+      "Drink a large glass of cold water quickly. This activates your parasympathetic nervous system.",
+    spokenText:
+      "Go chug a massive glass of cold water. Dehydration makes anxiety and cravings feel so much worse. Drink it down, take a deep breath, and feel the control returning to your body. I'm so proud of you.",
+  },
+];
 
 // --- MASCOT COMPONENT ---
 const BrainMascot = ({ className = "", expression = "happy", style }) => (
-  <motion.div style={style} className={`relative flex justify-center items-center ${className} animate-[bounce_3s_ease-in-out_infinite]`}>
-    <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-      <path d="M60 90C87.6142 90 110 72.0914 110 50C110 27.9086 87.6142 10 60 10C32.3858 10 10 27.9086 10 50C10 72.0914 32.3858 90 60 90Z" fill="#F9A8D4"/>
-      <path d="M30 30C40 20 50 15 60 15C70 15 80 20 90 30" stroke="#F472B6" strokeWidth="6" strokeLinecap="round"/>
-      <path d="M25 50C40 45 50 45 60 50C70 55 80 55 95 50" stroke="#F472B6" strokeWidth="6" strokeLinecap="round"/>
-      <path d="M35 70C45 75 50 75 60 70C70 65 80 65 85 70" stroke="#F472B6" strokeWidth="6" strokeLinecap="round"/>
-      <circle cx="35" cy="55" r="8" fill="#B25349" opacity="0.4"/>
-      <circle cx="85" cy="55" r="8" fill="#B25349" opacity="0.4"/>
-      {expression === 'sleepy' ? (
-         <>
-            <path d="M40 45 Q 45 48 50 45" stroke="#403931" strokeWidth="3" strokeLinecap="round" fill="none"/>
-            <path d="M70 45 Q 75 48 80 45" stroke="#403931" strokeWidth="3" strokeLinecap="round" fill="none"/>
-         </>
+  <motion.div
+    style={style}
+    className={`relative flex justify-center items-center ${className} animate-[bounce_3s_ease-in-out_infinite]`}
+  >
+    <svg
+      width="120"
+      height="100"
+      viewBox="0 0 120 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="relative z-10"
+    >
+      <path
+        d="M60 90C87.6142 90 110 72.0914 110 50C110 27.9086 87.6142 10 60 10C32.3858 10 10 27.9086 10 50C10 72.0914 32.3858 90 60 90Z"
+        fill="#F9A8D4"
+      />
+      <path
+        d="M30 30C40 20 50 15 60 15C70 15 80 20 90 30"
+        stroke="#F472B6"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25 50C40 45 50 45 60 50C70 55 80 55 95 50"
+        stroke="#F472B6"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M35 70C45 75 50 75 60 70C70 65 80 65 85 70"
+        stroke="#F472B6"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <circle cx="35" cy="55" r="8" fill="#B25349" opacity="0.4" />
+      <circle cx="85" cy="55" r="8" fill="#B25349" opacity="0.4" />
+      {expression === "sleepy" ? (
+        <>
+          <path
+            d="M40 45 Q 45 48 50 45"
+            stroke="#403931"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d="M70 45 Q 75 48 80 45"
+            stroke="#403931"
+            strokeWidth="3"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </>
       ) : (
-         <>
-            <circle cx="45" cy="45" r="5" fill="#403931" className="animate-[pulse_4s_ease-in-out_infinite]"/>
-            <circle cx="75" cy="45" r="5" fill="#403931" className="animate-[pulse_4s_ease-in-out_infinite]"/>
-         </>
+        <>
+          <circle
+            cx="45"
+            cy="45"
+            r="5"
+            fill="#403931"
+            className="animate-[pulse_4s_ease-in-out_infinite]"
+          />
+          <circle
+            cx="75"
+            cy="45"
+            r="5"
+            fill="#403931"
+            className="animate-[pulse_4s_ease-in-out_infinite]"
+          />
+        </>
       )}
-      {(expression === 'happy' || expression === 'cheering') && <path d="M55 55Q60 60 65 55" stroke="#403931" strokeWidth="3" strokeLinecap="round"/>}
-      {expression === 'breathing' && <circle cx="60" cy="57" r="4" fill="#403931"/>}
+      {(expression === "happy" || expression === "cheering") && (
+        <path
+          d="M55 55Q60 60 65 55"
+          stroke="#403931"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+      )}
+      {expression === "speaking" && (
+        <ellipse
+          cx="60"
+          cy="58"
+          rx="6"
+          ry="8"
+          fill="#403931"
+          className="animate-[pulse_0.5s_ease-in-out_infinite]"
+        />
+      )}
+      {expression === "breathing" && (
+        <circle cx="60" cy="57" r="4" fill="#403931" />
+      )}
     </svg>
-    {expression === 'cheering' && (
-      <motion.div initial={{ scale: 0 }} animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="absolute -top-4 -right-2 text-2xl z-20">✨</motion.div>
+    {expression === "cheering" && (
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ repeat: Infinity, duration: 1 }}
+        className="absolute -top-4 -right-2 text-2xl z-20"
+      >
+        ✨
+      </motion.div>
     )}
   </motion.div>
 );
 
-
 export default function CopingNow({ onClose }) {
   const [step, setStep] = useState(1);
   const totalSteps = 6;
-  
-  // Random Data States
-  const [randomData, setRandomData] = useState({ emotional: "", motivational: "", quote: "", affirmation: "" });
 
-  // Window size for Confetti
-  const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  // Random Data States
+  const [randomData, setRandomData] = useState({
+    emotional: "",
+    motivational: "",
+    quote: "",
+    affirmation: "",
+  });
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
   // State for Step 3: Breathing
-  const [breathePhase, setBreathePhase] = useState('Inhale...');
+  const [breathePhase, setBreathePhase] = useState("Inhale...");
   const [breathTimer, setBreathTimer] = useState(30);
   const audioRef = useRef(null);
 
-  // State for Step 4: Delay Timer
-  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes
-  const [timerActive, setTimerActive] = useState(false);
+  // --- State for Step 4: Guided Activities ---
+  const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
+  const [activityTimeLeft, setActivityTimeLeft] = useState(120); // 2 minutes per activity
+  const [isActivityActive, setIsActivityActive] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Initialize Random Data & Window Size on mount
   useEffect(() => {
     setRandomData({
-      emotional: EMOTIONAL_VIDEOS[Math.floor(Math.random() * EMOTIONAL_VIDEOS.length)],
-      motivational: MOTIVATIONAL_VIDEOS[Math.floor(Math.random() * MOTIVATIONAL_VIDEOS.length)],
+      emotional:
+        EMOTIONAL_VIDEOS[Math.floor(Math.random() * EMOTIONAL_VIDEOS.length)],
+      motivational:
+        MOTIVATIONAL_VIDEOS[
+          Math.floor(Math.random() * MOTIVATIONAL_VIDEOS.length)
+        ],
       quote: QUOTES[Math.floor(Math.random() * QUOTES.length)],
-      affirmation: AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]
+      affirmation:
+        AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)],
     });
 
-    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const handleResize = () =>
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // --- Step 3: Breathing Timer & Animation Logic ---
+  // --- Step 3 Logic ---
   useEffect(() => {
     let phaseInterval;
     let countdownInterval;
@@ -110,15 +266,18 @@ export default function CopingNow({ onClose }) {
     if (step === 3) {
       if (audioRef.current) {
         audioRef.current.volume = 0.3;
-        audioRef.current.play().catch(e => console.log("Audio autoplay blocked", e));
+        audioRef.current
+          .play()
+          .catch((e) => console.log("Audio autoplay blocked", e));
       }
-      
       phaseInterval = setInterval(() => {
-        setBreathePhase(prev => prev === 'Inhale...' ? 'Exhale...' : 'Inhale...');
-      }, 4000); 
+        setBreathePhase((prev) =>
+          prev === "Inhale..." ? "Exhale..." : "Inhale...",
+        );
+      }, 4000);
 
       countdownInterval = setInterval(() => {
-        setBreathTimer(prev => {
+        setBreathTimer((prev) => {
           if (prev <= 1) {
             setStep(4);
             return 0;
@@ -136,41 +295,107 @@ export default function CopingNow({ onClose }) {
     };
   }, [step]);
 
-  // --- Step 4: 15-Min Delay Timer Logic ---
+  // --- Step 4 Logic: Speech Synthesis & Timer ---
+  useEffect(() => {
+    // Handle the TTS Voice
+    const speakActivity = () => {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel(); // Stop any current speech
+
+      if (step === 4 && !isMuted) {
+        setIsSpeaking(true);
+        const text = COPING_ACTIVITIES[currentActivityIndex].spokenText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95; // Slightly slower, calming pace
+        utterance.pitch = 1.1; // Friendly pitch
+
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+
+    speakActivity();
+
+    // Cleanup speech if step changes or unmounts
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsSpeaking(false);
+    };
+  }, [step, currentActivityIndex, isMuted]);
+
+  // Step 4 Timer
   useEffect(() => {
     let interval;
-    if (step === 4 && timerActive && timeLeft > 0) {
-      interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    if (step === 4 && isActivityActive && activityTimeLeft > 0) {
+      interval = setInterval(
+        () => setActivityTimeLeft((prev) => prev - 1),
+        1000,
+      );
+    } else if (activityTimeLeft === 0 && isActivityActive) {
+      // Auto-advance to next activity when timer hits 0
+      if (currentActivityIndex < COPING_ACTIVITIES.length - 1) {
+        handleNextActivity();
+      } else {
+        setStep(5); // Move to resolution if all finished
+      }
     }
     return () => clearInterval(interval);
-  }, [step, timerActive, timeLeft]);
+  }, [step, isActivityActive, activityTimeLeft, currentActivityIndex]);
+
+  // Step 4 Handlers
+  const handleNextActivity = () => {
+    if (currentActivityIndex < COPING_ACTIVITIES.length - 1) {
+      setCurrentActivityIndex((prev) => prev + 1);
+      setActivityTimeLeft(120);
+      setIsActivityActive(true);
+    }
+  };
+
+  const handlePrevActivity = () => {
+    if (currentActivityIndex > 0) {
+      setCurrentActivityIndex((prev) => prev - 1);
+      setActivityTimeLeft(120);
+      setIsActivityActive(true);
+    }
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (!isMuted && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel(); // Stop speaking immediately if muted
+      setIsSpeaking(false);
+    }
+  };
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
-
-  const scienceActivities = [
-    { i: Snowflake, t: "Ice Dive Reflex", d: "Splash cold water on your face to slow your heart rate instantly." },
-    { i: Gamepad2, t: "Play Tetris", d: "Visual games disrupt the imagery of cravings in your brain." },
-    { i: Brain, t: "Chew Mint Gum", d: "Strong flavors shock your sensory system & distract your mind." },
-    { i: Eye, t: "5-4-3-2-1 Method", d: "Find 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste." },
-    { i: Droplet, t: "Chug Cold Water", d: "Drink a large glass of water to activate your parasympathetic system." },
-    { i: Wind, t: "Physiological Sigh", d: "Two quick inhales through the nose, one long exhale through the mouth." }
-  ];
 
   if (!randomData.emotional) return null; // Wait for random data to mount
 
   return (
-    <motion.div 
-      initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
+    <motion.div
+      initial={{ y: "100%", opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: "100%", opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className="absolute inset-0 z-50 bg-white flex flex-col font-sans"
     >
       {/* Universal Top Bar (Updated Cross Icon visibility) */}
       <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none">
-        <button onClick={onClose} className="pointer-events-auto w-10 h-10 bg-white shadow-lg border border-gray-100 rounded-full flex items-center justify-center text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all">
+        <button
+          onClick={() => {
+            if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+            onClose();
+          }}
+          className="pointer-events-auto w-10 h-10 bg-white shadow-lg border border-gray-100 rounded-full flex items-center justify-center text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all"
+        >
           <X size={20} strokeWidth={2.5} />
         </button>
         <span className="bg-white px-4 py-1.5 rounded-full text-xs font-bold text-gray-800 shadow-md tracking-widest uppercase border border-gray-100">
@@ -179,57 +404,72 @@ export default function CopingNow({ onClose }) {
       </div>
 
       <AnimatePresence mode="wait">
-        
-        {/* --- SCREEN 1: Emotional Anchor (YouTube Shorts) --- */}
+        {/* --- SCREEN 1: Emotional Anchor --- */}
         {step === 1 && (
-          <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-gray-900 relative flex flex-col items-center justify-center pt-16 pb-24 px-6">
-            
+          <motion.div
+            key="s1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 bg-gray-900 relative flex flex-col items-center justify-center pt-16 pb-24 px-6"
+          >
             <div className="relative w-full max-w-sm aspect-[9/16] rounded-[40px] p-1.5 bg-gradient-to-br from-[#7D9C6D] via-orange-400 to-[#D9ECA2] shadow-2xl shrink-0">
-              <div className="absolute top-6 -left-4 bg-white px-4 py-1 rounded-full shadow-lg font-bold text-[#7D9C6D] text-sm rotate-[-5deg] z-20 flex items-center gap-1"><Heart size={14}/> Family</div>
-              
-              {/* YouTube Iframe container */}
+              <div className="absolute top-6 -left-4 bg-white px-4 py-1 rounded-full shadow-lg font-bold text-[#7D9C6D] text-sm rotate-[-5deg] z-20 flex items-center gap-1">
+                <Heart size={14} /> Family
+              </div>
               <div className="w-full h-full rounded-[32px] overflow-hidden relative bg-black">
-                 <iframe 
-                   className="absolute inset-0 w-full h-full"
-                   src={randomData.emotional}
-                   title="Emotional Anchor Video"
-                   frameBorder="0" 
-                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                   allowFullScreen>
-                 </iframe>
-                 
-                 {/* Motivation Overlay */}
-                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/40 pointer-events-none">
-                   <BrainMascot expression="happy" className="w-24 h-24 mb-6 drop-shadow-2xl" />
-                   <h2 className="text-3xl font-extrabold text-white mb-2 leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">Remember your "Why"</h2>
-                 </div>
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={randomData.emotional}
+                  title="Emotional Anchor Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/40 pointer-events-none">
+                  <BrainMascot
+                    expression="happy"
+                    className="w-24 h-24 mb-6 drop-shadow-2xl"
+                  />
+                  <h2 className="text-3xl font-extrabold text-white mb-2 leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
+                    Remember your "Why"
+                  </h2>
+                </div>
               </div>
             </div>
-
             <div className="absolute bottom-8 w-full px-6 flex justify-center">
-              <button onClick={() => setStep(2)} className="w-full max-w-sm py-4 bg-white text-[#7D9C6D] rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(255,255,255,0.3)] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
+              <button
+                onClick={() => setStep(2)}
+                className="w-full max-w-sm py-4 bg-white text-[#7D9C6D] rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(255,255,255,0.3)] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all"
+              >
                 Continue <ArrowRight size={20} />
               </button>
             </div>
           </motion.div>
         )}
 
-        {/* --- SCREEN 2: YouTube Motivation + Random Quote --- */}
+        {/* --- SCREEN 2: YouTube Motivation --- */}
         {step === 2 && (
-          <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-[#f8fcf4] relative flex flex-col items-center pt-24 pb-24 px-6">
-            <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">Take a moment to reset.</h2>
-            
+          <motion.div
+            key="s2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 bg-[#f8fcf4] relative flex flex-col items-center pt-24 pb-24 px-6"
+          >
+            <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">
+              Take a moment to reset.
+            </h2>
             <div className="w-full max-w-sm aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl mb-8 relative border-4 border-white shrink-0 max-h-[50vh]">
-               <iframe 
-                 className="absolute inset-0 w-full h-full"
-                 src={randomData.motivational}
-                 title="Motivational Video"
-                 frameBorder="0" 
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                 allowFullScreen>
-               </iframe>
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={randomData.motivational}
+                title="Motivational Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
-
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-[#D9ECA2] w-full max-w-sm relative mt-auto">
               <div className="absolute -top-4 -left-2 text-[#7D9C6D] bg-[#D9ECA2] w-10 h-10 rounded-full flex items-center justify-center shadow-md">
                 <Quote size={20} fill="currentColor" />
@@ -238,119 +478,261 @@ export default function CopingNow({ onClose }) {
                 "{randomData.quote}"
               </p>
             </div>
-
             <div className="absolute bottom-8 w-full px-6 flex justify-center">
-              <button onClick={() => setStep(3)} className="w-full max-w-sm py-4 bg-[#7D9C6D] text-white rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(125,156,109,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
+              <button
+                onClick={() => setStep(3)}
+                className="w-full max-w-sm py-4 bg-[#7D9C6D] text-white rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(125,156,109,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+              >
                 Next: Guided Breathing
               </button>
             </div>
           </motion.div>
         )}
 
-        {/* --- SCREEN 3: Stabilization (Breathing 30s) --- */}
+        {/* --- SCREEN 3: Stabilization --- */}
         {step === 3 && (
-          <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center relative overflow-hidden">
-            <audio ref={audioRef} loop src="https://assets.mixkit.co/sfx/preview/mixkit-crickets-and-insects-in-the-wild-ambience-39.mp3" />
-            
-            <h2 className="text-2xl font-extrabold text-[#7D9C6D] mb-12 relative z-20 text-center px-4">Let's regulate your nervous system.</h2>
-            
+          <motion.div
+            key="s3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center relative overflow-hidden"
+          >
+            <audio
+              ref={audioRef}
+              loop
+              src="https://assets.mixkit.co/sfx/preview/mixkit-crickets-and-insects-in-the-wild-ambience-39.mp3"
+            />
+            <h2 className="text-2xl font-extrabold text-[#7D9C6D] mb-12 relative z-20 text-center px-4">
+              Let's regulate your nervous system.
+            </h2>
             <div className="relative w-64 h-64 flex items-center justify-center">
-              <motion.div 
-                animate={{ scale: breathePhase === 'Inhale...' ? 1.5 : 0.8, opacity: breathePhase === 'Inhale...' ? 0.3 : 0.6 }}
+              <motion.div
+                animate={{
+                  scale: breathePhase === "Inhale..." ? 1.5 : 0.8,
+                  opacity: breathePhase === "Inhale..." ? 0.3 : 0.6,
+                }}
                 transition={{ duration: 4, ease: "easeInOut" }}
                 className="absolute inset-0 bg-[#7D9C6D] rounded-full"
               />
-              <motion.div 
-                animate={{ scale: breathePhase === 'Inhale...' ? 1.2 : 0.9 }}
+              <motion.div
+                animate={{ scale: breathePhase === "Inhale..." ? 1.2 : 0.9 }}
                 transition={{ duration: 4, ease: "easeInOut" }}
                 className="absolute inset-4 bg-[#D9ECA2] rounded-full opacity-80"
               />
-              <BrainMascot 
-                expression="breathing" 
-                style={{ scale: breathePhase === 'Inhale...' ? 1.1 : 0.9 }} 
-                className="w-32 h-32 relative z-20 transition-transform duration-[4000ms] ease-in-out" 
+              <BrainMascot
+                expression="breathing"
+                style={{ scale: breathePhase === "Inhale..." ? 1.1 : 0.9 }}
+                className="w-32 h-32 relative z-20 transition-transform duration-[4000ms] ease-in-out"
               />
             </div>
-
-            <motion.h1 
+            <motion.h1
               key={breathePhase}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className="text-4xl font-extrabold text-gray-800 mt-16 h-12"
             >
               {breathePhase}
             </motion.h1>
-
             <div className="absolute bottom-20 flex flex-col items-center">
-              <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">Auto-advancing in</div>
+              <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Auto-advancing in
+              </div>
               <div className="text-3xl font-black text-[#7D9C6D] bg-white px-6 py-2 rounded-2xl shadow-sm border border-[#D9ECA2]">
-                00:{breathTimer.toString().padStart(2, '0')}
+                00:{breathTimer.toString().padStart(2, "0")}
               </div>
             </div>
-            
-            <button onClick={() => setStep(4)} className="absolute bottom-6 text-gray-400 font-bold text-sm underline underline-offset-4 hover:text-gray-600 transition-colors">
+            <button
+              onClick={() => setStep(4)}
+              className="absolute bottom-6 text-gray-400 font-bold text-sm underline underline-offset-4 hover:text-gray-600 transition-colors"
+            >
               Skip breathing
             </button>
           </motion.div>
         )}
 
-        {/* --- SCREEN 4: The Delay Timer & Activities --- */}
-        {step === 4 && (
-          <motion.div key="s4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-[#FAFAFA] flex flex-col items-center pt-24 pb-8 relative hide-scrollbar overflow-y-auto">
-            
-            <div className="bg-white mx-6 p-6 rounded-[32px] shadow-sm border border-gray-100 w-[calc(100%-3rem)] flex flex-col items-center shrink-0">
-              <h2 className="text-gray-500 font-bold mb-1 uppercase tracking-widest text-xs">Urge Surfing Timer</h2>
-              <div className="text-6xl font-black text-gray-800 mb-4 font-mono tracking-tighter">
-                {formatTime(timeLeft)}
-              </div>
-              <div className="flex gap-4">
-                <button onClick={() => setTimerActive(!timerActive)} className="w-14 h-14 rounded-full bg-[#D9ECA2] text-[#7D9C6D] flex items-center justify-center hover:bg-[#cbe389] transition-colors">
-                  {timerActive ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-                </button>
-                <button onClick={() => {setTimeLeft(900); setTimerActive(false);}} className="w-14 h-14 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors">
-                  <RotateCcw size={20} />
-                </button>
-              </div>
-            </div>
+        {/* --- SCREEN 4: NEW Guided Activity Sequence --- */}
+        {step === 4 &&
+          (() => {
+            const currentActivity = COPING_ACTIVITIES[currentActivityIndex];
+            const ActivityIcon = currentActivity.icon;
 
-            <div className="w-full mt-8 px-6 pb-24">
-              <h3 className="font-extrabold text-gray-800 text-lg mb-4">Science-Backed Distractions:</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {scienceActivities.map((act, i) => (
-                  <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:border-orange-200 transition-colors cursor-pointer group">
-                    <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-100">
-                      <act.i size={24}/>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm">{act.t}</h4>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{act.d}</p>
-                    </div>
+            return (
+              <motion.div
+                key="s4"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                className="flex-1 bg-[#FAFAFA] flex flex-col hide-scrollbar overflow-y-auto"
+              >
+                {/* TOP HALF: Mascot & Speech */}
+                <div className="bg-gradient-to-b from-[#D9ECA2] to-[#FAFAFA] pt-24 pb-8 px-6 flex flex-col items-center justify-center relative">
+                  {/* Mute Toggle */}
+                  <button
+                    onClick={toggleMute}
+                    className="absolute top-24 right-6 w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-[#7D9C6D] shadow-sm hover:bg-white/80 transition-colors"
+                  >
+                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </button>
+
+                  <div className="relative mb-6">
+                    <BrainMascot
+                      expression={isSpeaking ? "speaking" : "happy"}
+                      className="w-32 h-32 drop-shadow-xl"
+                    />
+                    {isSpeaking && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="absolute -top-4 -right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center text-xl shadow-md"
+                      >
+                        💬
+                      </motion.div>
+                    )}
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="fixed bottom-0 w-full p-6 bg-gradient-to-t from-white via-white to-transparent pt-12">
-              <button onClick={() => setStep(5)} className="w-60 py-4 text-centre margin-auto bg-[#7D9C6D] text-white rounded-2xl font-bold shadow-[0_8px_30px_rgb(125,156,109,0.3)] hover:scale-[1.02] active:scale-95 transition-transform text-lg">
-                I successfully waited it out
-              </button>
-            </div>
-          </motion.div>
-        )}
+                  <div className="bg-white p-5 rounded-3xl shadow-sm border border-white/50 relative max-w-sm w-full">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rotate-45 border-l border-t border-white/50"></div>
+                    <p className="text-gray-700 font-medium text-center relative z-10 leading-relaxed">
+                      {currentActivity.spokenText}
+                    </p>
+                  </div>
+                </div>
+
+                {/* BOTTOM HALF: Timer & Controls */}
+                <div className="flex-1 px-6 pb-24 flex flex-col items-center">
+                  {/* Activity Tracker Dots */}
+                  <div className="flex gap-2 mb-8">
+                    {COPING_ACTIVITIES.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`h-2 rounded-full transition-all duration-500 ${i === currentActivityIndex ? "w-8 bg-[#7D9C6D]" : i < currentActivityIndex ? "w-2 bg-[#D9ECA2]" : "w-2 bg-gray-200"}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Main Activity Card */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentActivity.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="w-full max-w-sm bg-white rounded-[32px] p-8 shadow-lg border border-gray-100 flex flex-col items-center text-center relative overflow-hidden"
+                    >
+                      {/* Background Icon Watermark */}
+                      <ActivityIcon
+                        size={120}
+                        className="absolute -right-6 -bottom-6 text-gray-50 opacity-50 pointer-events-none"
+                      />
+
+                      <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4 relative z-10">
+                        <ActivityIcon size={32} />
+                      </div>
+
+                      <h2 className="text-xl font-extrabold text-gray-800 mb-2 relative z-10">
+                        {currentActivity.title}
+                      </h2>
+                      <p className="text-sm text-gray-500 mb-8 relative z-10">
+                        {currentActivity.description}
+                      </p>
+
+                      {/* Timer */}
+                      <div className="text-6xl font-black text-[#7D9C6D] mb-8 font-mono tracking-tighter relative z-10 drop-shadow-sm">
+                        {formatTime(activityTimeLeft)}
+                      </div>
+
+                      {/* Player Controls */}
+                      <div className="flex items-center gap-6 relative z-10">
+                        <button
+                          onClick={handlePrevActivity}
+                          disabled={currentActivityIndex === 0}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30 transition-colors"
+                        >
+                          <SkipBack size={28} />
+                        </button>
+
+                        <button
+                          onClick={() => setIsActivityActive(!isActivityActive)}
+                          className="w-16 h-16 rounded-full bg-[#D9ECA2] text-[#7D9C6D] flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all"
+                        >
+                          {isActivityActive ? (
+                            <Pause size={28} />
+                          ) : (
+                            <Play size={28} className="ml-1" />
+                          )}
+                        </button>
+
+                        <button
+                          onClick={handleNextActivity}
+                          disabled={
+                            currentActivityIndex ===
+                            COPING_ACTIVITIES.length - 1
+                          }
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30 transition-colors"
+                        >
+                          <SkipForward size={28} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Finish Early Button */}
+                <div className="fixed bottom-0 w-full p-6 bg-gradient-to-t from-white via-white/90 to-transparent pt-12 flex justify-center">
+                  <button
+                    onClick={() => {
+                      if ("speechSynthesis" in window)
+                        window.speechSynthesis.cancel();
+                      setStep(5);
+                    }}
+                    className="w-full max-w-sm py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg"
+                  >
+                    <CheckCircle2 size={20} /> I feel better now
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })()}
 
         {/* --- SCREEN 5: Resolution & Feedback --- */}
         {step === 5 && (
-          <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-white flex flex-col items-center justify-center p-6 text-center relative">
-            <BrainMascot expression="thinking" className="w-32 h-32 mb-8 drop-shadow-md" />
-            <h1 className="text-3xl font-extrabold text-gray-800 mb-2">Check-in time.</h1>
-            <p className="text-gray-500 font-medium mb-10 px-4">Reflecting on what works helps your brain build stronger habits for next time.</p>
+          <motion.div
+            key="s5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 bg-white flex flex-col items-center justify-center p-6 text-center relative"
+          >
+            <BrainMascot
+              expression="thinking"
+              className="w-32 h-32 mb-8 drop-shadow-md"
+            />
+            <h1 className="text-3xl font-extrabold text-gray-800 mb-2">
+              Check-in time.
+            </h1>
+            <p className="text-gray-500 font-medium mb-10 px-4">
+              Reflecting on what works helps your brain build stronger habits
+              for next time.
+            </p>
 
             <div className="w-full bg-[#f8fcf4] p-6 rounded-[32px] border border-[#D9ECA2]">
-              <h3 className="font-bold text-gray-800 mb-4 text-lg">What helped you the most?</h3>
+              <h3 className="font-bold text-gray-800 mb-4 text-lg">
+                What helped you the most?
+              </h3>
               <div className="grid grid-cols-2 gap-3">
-                {['The Video', 'Deep Breathing', 'Playing Tetris', 'Cold Water', 'Waiting it out', 'Other'].map(opt => (
-                  <button 
-                    key={opt} 
-                    onClick={() => setStep(6)} 
+                {[
+                  "The Video",
+                  "Deep Breathing",
+                  "Playing Tetris",
+                  "Cold Water",
+                  "Waiting it out",
+                  "Other",
+                ].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setStep(6)}
                     className="p-3 bg-white shadow-sm rounded-2xl text-sm font-bold text-gray-600 hover:bg-[#7D9C6D] hover:text-white transition-all active:scale-95 border border-gray-100"
                   >
                     {opt}
@@ -363,27 +745,49 @@ export default function CopingNow({ onClose }) {
 
         {/* --- SCREEN 6: Final Celebration w/ Real Confetti --- */}
         {step === 6 && (
-          <motion.div key="s6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-            
+          <motion.div
+            key="s6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 bg-gradient-to-b from-[#D9ECA2] to-white flex flex-col items-center justify-center p-6 text-center relative overflow-hidden"
+          >
             {/* Real React Confetti */}
-            <Confetti 
-              width={windowSize.width} 
-              height={windowSize.height} 
-              recycle={false} 
-              numberOfPieces={400} 
+            <Confetti
+              width={windowSize.width}
+              height={windowSize.height}
+              recycle={false}
+              numberOfPieces={400}
               gravity={0.15}
-              colors={['#7D9C6D', '#D9ECA2', '#F3D79C', '#B25349', '#FFFFFF', '#f97316']}
+              colors={[
+                "#7D9C6D",
+                "#D9ECA2",
+                "#F3D79C",
+                "#B25349",
+                "#FFFFFF",
+                "#f97316",
+              ]}
             />
 
             <div className="relative z-20 flex flex-col items-center">
-              <BrainMascot expression="cheering" className="w-48 h-48 mb-8 drop-shadow-2xl" />
-              <h1 className="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">You did it! 🎊</h1>
+              <BrainMascot
+                expression="cheering"
+                className="w-48 h-48 mb-8 drop-shadow-2xl"
+              />
+              <h1 className="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">
+                You did it! 🎊
+              </h1>
               <p className="text-gray-700 font-bold text-xl mb-2 px-2">
                 {randomData.affirmation}
               </p>
-              <p className="text-gray-500 font-medium px-4 mb-12">Every time you surf an urge, your recovery muscles get stronger.</p>
+              <p className="text-gray-500 font-medium px-4 mb-12">
+                Every time you surf an urge, your recovery muscles get stronger.
+              </p>
 
-              <button onClick={onClose} className="w-full max-w-xs py-5 bg-[#7D9C6D] text-white rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(125,156,109,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={onClose}
+                className="w-full max-w-xs py-5 bg-[#7D9C6D] text-white rounded-2xl font-bold text-lg shadow-[0_8px_30px_rgb(125,156,109,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
                 Return to Dashboard <Heart size={20} fill="currentColor" />
               </button>
             </div>
